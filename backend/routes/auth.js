@@ -1,38 +1,49 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
 const router = express.Router();
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
 /* ================= REGISTER ================= */
 router.post("/register", async (req, res) => {
-  const { fullName, email, mobile, password } = req.body;
+  let { name, email, phone, password } = req.body;
 
   try {
-    // Check if user exists by email OR mobile
-    let user = await User.findOne({
-      $or: [{ email }, { mobile }],
-    });
-
-    if (user) {
-      return res.status(400).json({
-        message: "User already exists with this email or mobile",
-      });
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // ✅ NORMALIZE (DO NOT CHANGE COUNTRY CODE)
+    email = email.trim().toLowerCase();
+    phone = phone.replace(/\s|-/g, ""); // keep +91 intact
 
-    user = new User({
-      fullName,
-      email,
-      mobile,
-      password: hashedPassword,
+    const exists = await User.findOne({
+      $or: [{ email }, { phone }],
     });
 
-    await user.save();
+    if (exists) {
+      return res
+        .status(400)
+        .json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      phone, // e.g. +917984171823
+      password: hashedPassword,
+      role: "user",
+    });
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: "Registered successfully",
+      user: {
+        id: user._id,
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -40,14 +51,15 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/* ================= LOGIN (EMAIL OR MOBILE) ================= */
+/* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
-  const { identifier, password } = req.body;
+  let { identifier, password, role } = req.body;
 
   try {
-    // Find user by email OR mobile
+    identifier = identifier.trim().replace(/\s|-/g, "");
+
     const user = await User.findOne({
-      $or: [{ email: identifier }, { mobile: identifier }],
+      $or: [{ email: identifier }, { phone: identifier }],
     });
 
     if (!user) {
@@ -59,12 +71,28 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    res.status(200).json({
-      message: "Login successful",
+    if (user.role !== role) {
+      return res.status(403).json({
+        message:
+          user.role === "admin"
+            ? "Admin cannot login as user"
+            : "User cannot login as admin",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.json({
+      token,
       user: {
-        fullName: user.fullName,
+        id: user._id,
+        role: user.role,
         email: user.email,
-        mobile: user.mobile,
+        phone: user.phone,
       },
     });
   } catch (err) {
@@ -73,4 +101,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
