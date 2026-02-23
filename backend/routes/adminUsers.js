@@ -1,7 +1,6 @@
 import express from "express";
 import User from "../models/User.js";
-import { protect } from "../middleware/auth.js";
-import { adminOnly } from "../middleware/admin.js";
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -12,6 +11,20 @@ router.get("/users", protect, adminOnly, async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch users" });
+  }
+});
+
+// DELETE USER
+router.delete("/users/:id", protect, adminOnly, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.deleteOne();
+    res.json({ message: "User deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete user" });
   }
 });
 

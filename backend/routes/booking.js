@@ -1,20 +1,20 @@
 import express from "express";
-import Booking from "../models/Booking.js";
+import {
+  createBooking,
+  getUserBookings,
+  getAllBookings,
+  deleteBooking,
+} from "../controllers/bookingController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ✅ ADMIN: GET ALL BOOKINGS
-router.get("/", protect, adminOnly, async (req, res) => {
-  try {
-    const bookings = await Booking.find()
-      .populate("user", "name email")
-      .populate("flight", "from to price");
+// User Routes
+router.post("/", protect, createBooking);
+router.get("/my", protect, getUserBookings);
+router.delete("/:id", protect, deleteBooking);
 
-    res.json(bookings);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// Admin Routes
+router.get("/", protect, adminOnly, getAllBookings);
 
 export default router;
