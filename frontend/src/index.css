@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* optional: custom global styles */
+body {
+  @apply bg-gray-50 text-gray-900 transition-colors duration-200;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 400% 400%;
+  animation: gradient 12s ease infinite;
+}
+
+/* GLOBAL THEME BACKGROUND */
+.bg-theme-global {
+  background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.dark .bg-theme-global {
+  background-image: none;
+  background-color: #0f172a;
+  /* Slate-900 */
+}
