@@ -29,203 +29,207 @@ export default function BookingDetail() {
     if (!booking) return <div className="text-gray-500 dark:text-white text-center mt-20">Booking not found.</div>;
 
     return (
-        <div className="min-h-screen pt-6 pb-20 px-4">
+        <div className="min-h-screen py-32 px-4 shadow-inner">
             <div className="max-w-4xl mx-auto">
-                {/* HEADER ACTIONS - PRINT ONLY */}
-                <div className="flex justify-end items-center mb-8">
+                {/* HEADER ACTIONS */}
+                <div className="flex justify-between items-center mb-10">
+                    <h1 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter drop-shadow-2xl">Trip Receipt</h1>
                     <button
                         onClick={() => window.print()}
-                        className="flex items-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-white px-4 py-2 rounded-xl transition hover:shadow-lg border border-gray-200 dark:border-slate-700 print:hidden"
+                        className="flex items-center gap-3 bg-white text-indigo-950 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition shadow-xl hover:-translate-y-1 active:scale-95 border border-gray-100 print:hidden"
                     >
-                        <Printer size={18} /> Print Ticket
+                        <Printer size={20} /> PRINT E-TICKET
                     </button>
                 </div>
 
                 {/* MAIN CARD */}
-                <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden shadow-2xl print:shadow-none print:bg-white transition-colors">
+                <div className="bg-white rounded-[3rem] overflow-hidden shadow-[0_35px_70px_-15px_rgba(0,0,0,0.3)] border border-gray-100 print:shadow-none print:border-none transition-all">
 
                     {/* BANNER */}
-                    <div className="h-48 bg-indigo-600 relative flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                        <div className="text-center relative z-10 text-white">
-                            <h1 className="text-4xl font-bold mb-2 uppercase tracking-wider">{booking.destination}</h1>
-                            <p className="opacity-80 font-mono">ID: {booking._id.toUpperCase()}</p>
+                    <div className="h-64 bg-indigo-600 relative flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] animate-pulse"></div>
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
+                        <div className="text-center relative z-10">
+                            <h2 className="text-5xl md:text-7xl font-black text-white mb-4 uppercase tracking-tighter drop-shadow-lg">{booking.destination}</h2>
+                            <span className="bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-xl font-black text-xs uppercase tracking-[0.3em] border border-white/30">
+                                PASS: {booking._id.slice(-8).toUpperCase()}
+                            </span>
                         </div>
                     </div>
 
                     <div className="p-8">
                         {/* STATUS ROW */}
-                        <div className="flex justify-between items-start border-b border-gray-100 dark:border-gray-700 pb-8 mb-8">
-                            <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Booking Status</p>
-                                <div className={`flex items-center gap-2 font-bold text-lg capitalize ${booking.status === 'confirmed' ? 'text-green-600' : 'text-yellow-600'} `}>
-                                    {booking.status === 'confirmed' ? <CheckCircle size={20} /> : <Info size={20} />}
+                        <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 rounded-[2rem] p-10 mb-12 border border-gray-100">
+                            <div className="text-center md:text-left mb-6 md:mb-0">
+                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mb-3">Booking Status</p>
+                                <div className={`inline-flex items-center gap-3 font-black text-xl uppercase tracking-tighter ${booking.status === 'confirmed' ? 'text-indigo-600' : 'text-amber-500'} `}>
+                                    {booking.status === 'confirmed' ? <CheckCircle size={24} /> : <Info size={24} />}
                                     {booking.status}
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Total Paid</p>
-                                <p className="text-3xl font-bold text-gray-900 dark:text-white">₹{booking.totalPrice}</p>
+                            <div className="w-px h-12 bg-gray-200 hidden md:block"></div>
+                            <div className="text-center md:text-right">
+                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] mb-2">Total Investment</p>
+                                <p className="text-5xl font-black text-indigo-950 tracking-tighter">₹{booking.totalPrice?.toLocaleString()}</p>
                             </div>
-
-                            {/* GUEST LIST */}
-                            {booking.travelersDetails && booking.travelersDetails.length > 0 && (
-                                <div className="mt-6">
-                                    <h4 className="font-bold text-gray-800 dark:text-white mb-3 text-sm uppercase tracking-wide">Guest Information</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {booking.travelersDetails.map((guest, i) => (
-                                            <div key={i} className="bg-white dark:bg-slate-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600 flex justify-between items-center">
-                                                <div>
-                                                    <p className="font-bold text-gray-800 dark:text-white">{guest.name}</p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">{guest.gender}, {guest.age} years</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm font-mono text-gray-600 dark:text-gray-300">{guest.phone}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* FLIGHT SECTION */}
-                            {booking.flight && (
-                                <div className="space-y-4">
-                                    <h3 className="flex items-center gap-2 text-gray-400 font-bold uppercase tracking-wider text-sm">
-                                        <Plane size={18} /> Flight Details
-                                    </h3>
-                                    <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-600">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <span className="font-bold text-xl text-gray-800 dark:text-white">{booking.flight.airline}</span>
-                                            <span className="bg-white dark:bg-slate-600 border border-gray-200 dark:border-gray-500 px-2 py-1 rounded text-sm font-mono text-gray-500 dark:text-gray-300">{booking.flight.code}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center mb-4">
-                                            <div className="text-center">
-                                                <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">{booking.flight.from?.split(' ')[0] || "DEL"}</p>
-                                                <p className="text-xs text-gray-400">Origin</p>
-                                            </div>
-                                            <div className="flex-1 px-4 flex flex-col items-center">
-                                                <p className="text-xs text-gray-400 mb-1">{booking.flight.duration}</p>
-                                                <div className="w-full h-px bg-gray-300 dark:bg-gray-600 relative">
-                                                    <Plane size={12} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 rotate-90" />
-                                                </div>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-2xl font-bold text-gray-700 dark:text-gray-200">{booking.flight.to?.split(' ')[0] || "DEST"}</p>
-                                                <p className="text-xs text-gray-400">Destination</p>
-                                            </div>
-                                        </div>
-                                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-slate-600 py-2 rounded-lg border border-gray-100 dark:border-gray-500">
-                                            {booking.flight.time}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* HOTEL SECTION */}
-                            {booking.hotel && (
-                                <div className="space-y-4">
-                                    <h3 className="flex items-center gap-2 text-gray-400 font-bold uppercase tracking-wider text-sm">
-                                        <Hotel size={18} /> Hotel Stay
-                                    </h3>
-                                    <div className="bg-gray-50 dark:bg-slate-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-600 h-full">
-                                        <div className="flex gap-4 items-start">
-                                            <img src={booking.hotel.image} className="w-20 h-20 rounded-xl object-cover shadow-sm" alt="Hotel" />
+                        {/* GUEST LIST */}
+                        {booking.travelersDetails && booking.travelersDetails.length > 0 && (
+                            <div className="mt-6">
+                                <h4 className="text-sm font-black text-indigo-950 mb-6 uppercase tracking-widest">Guest Manifest</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {booking.travelersDetails.map((guest, i) => (
+                                        <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 flex justify-between items-center shadow-sm">
                                             <div>
-                                                <h4 className="font-bold text-lg text-gray-800 dark:text-white leading-tight mb-1">{booking.hotel.name}</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{booking.hotel.type}</p>
-                                                <div className="flex items-center gap-1 text-yellow-500 text-xs font-bold bg-white dark:bg-slate-600 px-2 py-1 rounded-full w-fit shadow-sm border border-gray-100 dark:border-gray-500">
-                                                    ★ {booking.hotel.rating}
-                                                </div>
+                                                <p className="font-black text-indigo-950 uppercase text-sm tracking-tight">{guest.name}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{guest.gender}, {guest.age} years</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs font-black text-indigo-600 tracking-widest">{guest.phone}</p>
                                             </div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                    </div>
 
-                        {/* TRAVELER DETAILS */}
-                        <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
-                            <h3 className="flex items-center gap-2 text-gray-400 font-bold uppercase tracking-wider text-sm mb-4">
-                                <Users size={18} /> Travelers & Data
-                            </h3>
-                            <div className="bg-indigo-50/50 dark:bg-indigo-900/30 rounded-2xl p-6 border border-indigo-50 dark:border-indigo-800/50 mb-6">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div>
-                                        <p className="text-xs text-gray-400 uppercase mb-1">Check-in</p>
-                                        <p className="font-semibold text-gray-700 dark:text-gray-200">{new Date(booking.startDate).toDateString()}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {/* FLIGHT SECTION */}
+                        {booking.flight && (
+                            <div className="space-y-6">
+                                <h3 className="flex items-center gap-3 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">
+                                    <Plane size={18} className="text-indigo-600" /> Flight Itinerary
+                                </h3>
+                                <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 shadow-inner">
+                                    <div className="flex justify-between items-center mb-8">
+                                        <span className="font-black text-2xl text-indigo-950 uppercase tracking-tight">{booking.flight.airline}</span>
+                                        <span className="bg-white border border-gray-100 px-4 py-2 rounded-xl text-xs font-black text-indigo-400 tracking-widest">{booking.flight.code}</span>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-400 uppercase mb-1">Check-out</p>
-                                        <p className="font-semibold text-gray-700 dark:text-gray-200">{new Date(booking.endDate).toDateString()}</p>
+                                    <div className="flex justify-between items-center mb-8">
+                                        <div className="text-center">
+                                            <p className="text-3xl font-black text-indigo-950 tracking-tighter">{booking.flight.from?.split(' ')[0] || "DEL"}</p>
+                                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Origin</p>
+                                        </div>
+                                        <div className="flex-1 px-6 flex flex-col items-center">
+                                            <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-2">{booking.flight.duration}</p>
+                                            <div className="w-full h-px bg-gray-200 relative">
+                                                <Plane size={14} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-indigo-600 rotate-90" />
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-3xl font-black text-indigo-950 tracking-tighter">{booking.flight.to?.split(' ')[0] || "DEST"}</p>
+                                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Goal</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-gray-400 uppercase mb-1">Total Travelers</p>
-                                        <p className="font-semibold text-gray-700 dark:text-gray-200">{booking.travelers}</p>
+                                    <p className="text-center text-xs font-black text-indigo-600 bg-white py-4 rounded-2xl border border-gray-100 tracking-widest uppercase">
+                                        DEPARTURE: {booking.flight.time}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* HOTEL SECTION */}
+                        {booking.hotel && (
+                            <div className="space-y-6">
+                                <h3 className="flex items-center gap-3 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px]">
+                                    <Hotel size={18} className="text-indigo-600" /> Accommodation
+                                </h3>
+                                <div className="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 shadow-inner h-full flex flex-col">
+                                    <div className="flex gap-6 items-center">
+                                        <img src={booking.hotel.image} className="w-24 h-24 rounded-[1.5rem] object-cover shadow-xl border-2 border-white" alt="Hotel" />
+                                        <div>
+                                            <h4 className="font-black text-2xl text-indigo-950 uppercase tracking-tight mb-2 leading-none">{booking.hotel.name}</h4>
+                                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4">{booking.hotel.type}</p>
+                                            <div className="flex items-center gap-2 text-indigo-600 text-[10px] font-black bg-white px-4 py-2 rounded-xl w-fit shadow-sm border border-gray-50 uppercase tracking-widest">
+                                                <span className="text-amber-400">★</span> {booking.hotel.rating} Score
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        )}
+                    </div>
 
-                            {/* DETAILED TRAVELERS TABLE */}
-                            {booking.travelersDetails && booking.travelersDetails.length > 0 && (
-                                <div className="border border-gray-100 dark:border-gray-700 rounded-2xl overflow-hidden">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead className="bg-gray-50 dark:bg-slate-700/50 text-xs font-semibold uppercase text-gray-400 tracking-wider">
-                                            <tr>
-                                                <th className="p-4 border-b border-gray-100 dark:border-gray-700">Name</th>
-                                                <th className="p-4 border-b border-gray-100 dark:border-gray-700">Age</th>
-                                                <th className="p-4 border-b border-gray-100 dark:border-gray-700">Gender</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700 text-sm text-gray-700 dark:text-gray-300">
-                                            {booking.travelersDetails.map((t, i) => (
-                                                <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition">
-                                                    <td className="p-4 font-medium capitalize">{t.name}</td>
-                                                    <td className="p-4">{t.age}</td>
-                                                    <td className="p-4 capitalize">{t.gender}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                    {/* TRAVELER DETAILS */}
+                    <div className="mt-14 pt-14 border-t border-gray-50">
+                        <h3 className="flex items-center gap-3 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px] mb-8">
+                            <Users size={18} className="text-indigo-600" /> Logistical Data
+                        </h3>
+                        <div className="bg-indigo-50/50 rounded-[2rem] p-10 border border-indigo-100 mb-10">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
+                                <div>
+                                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-3">Launch</p>
+                                    <p className="font-black text-indigo-950 text-xl tracking-tight">{new Date(booking.startDate).toDateString()}</p>
                                 </div>
-                            )}
+                                <div>
+                                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-3">Return</p>
+                                    <p className="font-black text-indigo-950 text-xl tracking-tight">{new Date(booking.endDate).toDateString()}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-3">Manifest Size</p>
+                                    <p className="font-black text-indigo-950 text-xl tracking-tight uppercase">{booking.travelers} Persons</p>
+                                </div>
+                            </div>
+                        </div>
 
-                            {/* PAYMENT INFO */}
-                            {booking.paymentId && (
-                                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
-                                    <h3 className="flex items-center gap-2 text-gray-400 font-bold uppercase tracking-wider text-sm mb-4">
-                                        <CreditCard size={18} /> Payment Information
-                                    </h3>
-                                    <div className="bg-green-50 dark:bg-green-900/10 rounded-2xl p-6 border border-green-100 dark:border-green-800/30 flex flex-wrap justify-between items-center gap-4">
-                                        <div>
-                                            <p className="text-xs text-green-600/60 dark:text-green-400/60 uppercase mb-1">Payment Method</p>
-                                            <p className="font-bold text-green-800 dark:text-green-400">{booking.paymentId.method || "Card"}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-green-600/60 dark:text-green-400/60 uppercase mb-1">Transaction ID</p>
-                                            <p className="font-mono text-green-800 dark:text-green-400 text-sm">{booking.paymentId._id}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-green-600/60 dark:text-green-400/60 uppercase mb-1">Status</p>
-                                            <div className="flex items-center gap-1 font-bold text-green-700 dark:text-green-400 capitalize">
-                                                <CheckCircle size={14} /> {booking.paymentId.status || "Paid"}
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xs text-green-600/60 dark:text-green-400/60 uppercase mb-1">Amount</p>
-                                            <p className="font-bold text-xl text-green-800 dark:text-green-400">₹{booking.paymentId.amount || booking.totalPrice}</p>
+                        {/* DETAILED TRAVELERS TABLE */}
+                        {booking.travelersDetails && booking.travelersDetails.length > 0 && (
+                            <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-gray-50 text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">
+                                        <tr>
+                                            <th className="p-6 border-b border-gray-100">Name</th>
+                                            <th className="p-6 border-b border-gray-100">Age</th>
+                                            <th className="p-6 border-b border-gray-100">Gender</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50 text-sm text-indigo-950">
+                                        {booking.travelersDetails.map((t, i) => (
+                                            <tr key={i} className="hover:bg-indigo-50/30 transition-colors">
+                                                <td className="p-6 font-black uppercase tracking-tight">{t.name}</td>
+                                                <td className="p-6 font-bold">{t.age}</td>
+                                                <td className="p-6 font-black uppercase text-[10px] tracking-widest">{t.gender}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {/* PAYMENT INFO */}
+                        {booking.paymentId && (
+                            <div className="mt-14 pt-14 border-t border-gray-50">
+                                <h3 className="flex items-center gap-3 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px] mb-8">
+                                    <CreditCard size={18} className="text-indigo-600" /> Transaction Audit
+                                </h3>
+                                <div className="bg-emerald-50 rounded-[2.5rem] p-10 border border-emerald-100 flex flex-wrap justify-between items-center gap-10">
+                                    <div>
+                                        <p className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest mb-2">Method</p>
+                                        <p className="font-black text-emerald-950 uppercase tracking-tight text-lg">{booking.paymentId.method || "SECURE-CARD"}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest mb-2">Ref ID</p>
+                                        <p className="font-mono text-emerald-800 text-xs px-3 py-1 bg-white rounded-lg border border-emerald-100">TXN-{booking.paymentId._id.slice(-8).toUpperCase()}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest mb-2">Status</p>
+                                        <div className="flex items-center gap-2 font-black text-emerald-600 uppercase tracking-widest text-xs bg-white px-4 py-2 rounded-xl shadow-sm">
+                                            <CheckCircle size={14} /> {booking.paymentId.status || "CONFIRMED"}
                                         </div>
                                     </div>
+                                    <div className="text-right">
+                                        <p className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest mb-2">Settlement</p>
+                                        <p className="font-black text-3xl text-emerald-600 tracking-tighter">₹{booking.paymentId.amount || booking.totalPrice}</p>
+                                    </div>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
 
-                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

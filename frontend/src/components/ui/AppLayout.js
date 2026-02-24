@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, Map, Calendar, User, Settings, Home, Mountain, Heart, MessageSquare, Moon, Sun, ChevronDown, Lock, Trash2, Menu, X } from "lucide-react";
+import { LogOut, Map, Calendar, User, Settings, Home, Mountain, Heart, MessageSquare, Moon, Sun, ChevronDown, Lock, Trash2, Menu, X, ArrowLeft } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -38,6 +38,7 @@ export default function AppLayout() {
 
     // Navigation Items
     const NavItems = [
+        { icon: Map, label: "Destinations", path: "/app/dashboard" },
         { icon: Heart, label: "Wishlist", path: "/app/wishlist" },
         // { icon: MessageSquare, label: "Chat", action: "chat" }, // Chat is floating
         { icon: Calendar, label: "My Bookings", path: "/app/mybookings" },
@@ -48,27 +49,39 @@ export default function AppLayout() {
             className={`min-h-screen bg-cover bg-center flex flex-col relative ${theme}`}
             style={{
                 backgroundImage:
-                    "url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')",
+                    "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470')",
+                backgroundAttachment: "fixed",
             }}
         >
             {/* BACKGROUND OVERLAY - Dark Mode aware via CSS or opacity adjustment if needed, 
                 but user wanted same background. Using dark class on root affects contained elements. */}
-            <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/80' : 'bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-blue-900/40'}`} />
+            <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/85' : 'bg-gradient-to-br from-indigo-950/90 via-blue-900/70 to-purple-950/90'}`} />
 
             {/* TOP NAVBAR */}
             <header className="relative z-50 px-6 py-4 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/10">
                 {/* BRANDING */}
-                <div onClick={() => navigate("/app/dashboard")} className="flex items-center gap-2 cursor-pointer group">
-                    <div className="bg-indigo-600 p-2 rounded-lg group-hover:scale-105 transition-transform">
-                        <Mountain className="text-white" size={24} />
+                <div className="flex items-center gap-4">
+                    {/* BACK BUTTON */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition backdrop-blur-md border border-white/10"
+                        aria-label="Go Back"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+
+                    <div onClick={() => navigate("/app/dashboard")} className="flex items-center gap-2 cursor-pointer group">
+                        <div className="bg-indigo-600 p-2 rounded-lg group-hover:scale-105 transition-transform">
+                            <Mountain className="text-white" size={24} />
+                        </div>
+                        <h1 className="text-2xl font-bold text-white tracking-wide">TripPlanner</h1>
                     </div>
-                    <h1 className="text-2xl font-bold text-white tracking-wide">TripPlanner</h1>
                 </div>
 
                 {/* DESKTOP NAV (Right Side) */}
                 <div className="hidden md:flex items-center gap-6">
                     {/* WIDGETS */}
-                    {NavItems.map((item, idx) => (
+                    {NavItems.filter(item => !(item.label === "Wishlist" && location.pathname.includes("destinations"))).map((item, idx) => (
                         <button
                             key={idx}
                             onClick={() => navigate(item.path)}
@@ -129,7 +142,6 @@ export default function AppLayout() {
                                         </div>
                                     </button>
 
-                                    <MenuItem icon={Lock} label="Change Password" onClick={() => navigate("/app/settings")} />
 
                                     <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
 
@@ -153,7 +165,7 @@ export default function AppLayout() {
             {/* MOBILE MENU OVERLAY (Simplified for now) */}
             {mobileMenuOpen && (
                 <div className="md:hidden absolute top-16 left-0 right-0 z-40 bg-gray-900/95 backdrop-blur-xl border-b border-white/10 p-4 space-y-4">
-                    {NavItems.map((item, idx) => (
+                    {NavItems.filter(item => !(item.label === "Wishlist" && location.pathname.includes("destinations"))).map((item, idx) => (
                         <button
                             key={idx}
                             onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}

@@ -27,44 +27,44 @@ export default function Profile() {
   if (!displayUser) return <div className="text-white p-10">Loading profile...</div>;
 
   return (
-    <div className="min-h-screen py-10 px-4">
+    <div className="min-h-screen py-32 px-4 shadow-inner">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">My Profile</h1>
+        <h1 className="text-5xl md:text-7xl font-black text-white mb-12 uppercase tracking-tighter drop-shadow-2xl text-center">My Account</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* LEFT CARD (Identity) */}
-          <div className="md:col-span-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-3xl p-6 h-fit text-center shadow-xl">
-            <div className="w-28 h-28 mx-auto rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 shadow-inner">
-              <User size={48} />
+          <div className="md:col-span-1 bg-white rounded-[3rem] p-10 h-fit text-center shadow-[0_30px_60px_-12px_rgba(0,0,0,0.25)] border border-gray-100">
+            <div className="w-32 h-32 mx-auto rounded-[2rem] bg-indigo-50 flex items-center justify-center text-indigo-600 mb-6 border-2 border-indigo-100 shadow-inner">
+              <User size={64} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{displayUser.name}</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-6 uppercase tracking-wider">{displayUser.role}</p>
+            <h2 className="text-3xl font-black text-indigo-950 uppercase tracking-tight">{displayUser.name}</h2>
+            <p className="text-xs text-gray-400 font-black mb-10 uppercase tracking-[0.2em] mt-2">{displayUser.role || "Traveler"}</p>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
                 onClick={() => navigate("/app/settings")}
-                className="w-full py-2.5 flex items-center justify-center gap-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition"
+                className="w-full py-4 flex items-center justify-center gap-3 bg-indigo-50 text-indigo-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 transition border border-indigo-100"
               >
-                <Settings size={18} /> Settings
+                <Settings size={20} /> Settings
               </button>
               <button
                 onClick={() => { logout(); navigate("/"); }}
-                className="w-full py-2.5 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition"
+                className="w-full py-4 flex items-center justify-center gap-3 bg-rose-50 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition border border-rose-100"
               >
-                <LogOut size={18} /> Logout
+                <LogOut size={20} /> Logout
               </button>
             </div>
           </div>
 
           {/* RIGHT CARD (Details) */}
-          <div className="md:col-span-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white">Personal Details</h3>
+          <div className="md:col-span-2 bg-white rounded-[3rem] p-12 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.25)] border border-gray-100">
+            <div className="flex justify-between items-center mb-10 pb-6 border-b border-gray-50">
+              <h3 className="text-3xl font-black text-indigo-950 uppercase tracking-tight">Personal Details</h3>
               <button
                 onClick={() => navigate("/app/settings")}
-                className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                className="text-xs text-indigo-400 font-black uppercase tracking-widest hover:text-indigo-600 transition"
               >
-                Edit in Settings
+                EDIT PROFILE
               </button>
             </div>
 
@@ -98,11 +98,11 @@ export default function Profile() {
 }
 
 const InfoField = ({ icon, label, value }) => (
-  <div className="flex items-center gap-4 p-4 bg-gray-50/50 dark:bg-slate-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 transition hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm">
-    <div className="text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 p-2.5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600">{icon}</div>
+  <div className="flex items-center gap-6 p-6 bg-gray-50 rounded-[2rem] border border-gray-100 transition hover:bg-indigo-50/50 hover:border-indigo-100 group">
+    <div className="text-indigo-600 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group-hover:scale-110 transition-transform">{icon}</div>
     <div>
-      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-0.5">{label}</p>
-      <p className="font-semibold text-gray-800 dark:text-white text-lg">{value || "Not provided"}</p>
+      <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">{label}</p>
+      <p className="font-black text-indigo-950 text-xl tracking-tight">{value || "Not provided"}</p>
     </div>
   </div>
 );

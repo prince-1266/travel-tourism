@@ -36,9 +36,9 @@ const Footer = () => {
                         <h3 className="text-white text-lg font-bold mb-6 tracking-wide">Support</h3>
                         <ul className="space-y-4">
                             <li><Link to="/help" className="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>Help Center</Link></li>
+                            <li><Link to="/faq" className="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>FAQs</Link></li>
                             <li><Link to="/terms" className="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>Terms of Service</Link></li>
                             <li><Link to="/privacy" className="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>Privacy Policy</Link></li>
-                            <li><Link to="/faq" className="text-gray-400 hover:text-blue-500 transition-colors flex items-center gap-2 group"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>FAQs</Link></li>
                         </ul>
                     </div>
 
@@ -62,13 +62,8 @@ const Footer = () => {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800/60 pt-8 text-center text-gray-500 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="border-t border-gray-800/60 pt-8 text-center text-gray-500">
                     <p className="text-sm font-medium">&copy; {new Date().getFullYear()} TripWell. All rights reserved.</p>
-                    <div className="flex px-4 gap-6 text-sm font-medium text-gray-500">
-                        <Link to="/privacy" className="hover:text-gray-300 transition-colors">Privacy</Link>
-                        <Link to="/terms" className="hover:text-gray-300 transition-colors">Terms</Link>
-                        <Link to="/sitemap" className="hover:text-gray-300 transition-colors">Sitemap</Link>
-                    </div>
                 </div>
             </div>
         </footer>

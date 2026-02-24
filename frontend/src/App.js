@@ -3,6 +3,7 @@ import AppLayout from "./components/ui/AppLayout";
 import AdminLayout from "./components/AdminLayout";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import Layout from "./components/Layout";
+import ScrollToTop from "./components/ScrollToTop";
 
 /* ===== PAGES ===== */
 import Index from "./pages/Index";
@@ -12,6 +13,10 @@ import Packages from "./pages/Packages";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Help from "./pages/Help";
+import Faq from "./pages/Faq";
 import Dashboard from "./pages/Dashboard";
 import SearchTrip from "./pages/SearchTrip";
 import Destinations from "./pages/Destinations";
@@ -35,6 +40,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 function App() {
   return (
     <ThemeProvider>
+      <ScrollToTop />
       <Routes>
         {/* ================= PUBLIC WEBSITE (WITH NAVBAR & FOOTER) ================= */}
         <Route element={<Layout />}>
@@ -44,13 +50,15 @@ function App() {
           <Route path="/packages" element={<Packages />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destination/:id" element={<DestinationDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/faq" element={<Faq />} />
         </Route>
-
-        {/* ================= AUTH PAGES (STANDALONE) ================= */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* ================= PRIVATE APP ================= */}
         <Route

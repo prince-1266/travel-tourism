@@ -36,10 +36,15 @@ export default function AdminLayout() {
 
     return (
         <div
-            className={`min-h-screen flex flex-col relative ${theme} bg-theme-global transition-colors duration-500`}
+            className={`min-h-screen bg-cover bg-center flex flex-col relative ${theme} bg-theme-global transition-colors duration-500`}
+            style={{
+                backgroundImage:
+                    "url('https://images.unsplash.com/photo-1501785888041-af3ef285b470')",
+                backgroundAttachment: "fixed",
+            }}
         >
             {/* BACKGROUND OVERLAY */}
-            <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/90' : 'bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-blue-900/40'}`} />
+            <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/85' : 'bg-gradient-to-br from-indigo-950/90 via-blue-900/70 to-purple-950/90'}`} />
 
             {/* TOP NAVBAR */}
             <header className="relative z-50 px-6 py-4 flex items-center justify-between bg-black/20 backdrop-blur-md border-b border-white/10">

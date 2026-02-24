@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Plane, Map, Phone, Info } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Menu, X, Plane, Map, Phone, Info, ChevronLeft } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,16 +36,27 @@ const Navbar = () => {
     <nav className={`fixed w-full top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] py-3' : 'bg-white/30 backdrop-blur-md py-5 border-b border-white/10'}`}>
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="bg-gradient-to-br from-blue-700 via-blue-500 to-indigo-600 p-2.5 rounded-full shadow-[0_4px_20px_0_rgba(37,99,235,0.4)] group-hover:shadow-[0_8px_25px_rgba(37,99,235,0.5)] group-hover:scale-110 transition-all duration-300 text-white flex items-center justify-center border border-white/20 backdrop-blur-sm relative overflow-hidden">
-              <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <Plane size={24} className="group-hover:rotate-[20deg] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300 relative z-10" />
-            </div>
-            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-500 bg-clip-text text-transparent drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300">
-              TripWell
-            </span>
-          </Link>
+          {/* Logo & Back Button */}
+          <div className="flex items-center gap-2">
+            {location.pathname !== '/' && (
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 mr-1 rounded-full text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 flex items-center justify-center group/back"
+                title="Go Back"
+              >
+                <ChevronLeft size={24} className="group-hover/back:-translate-x-0.5 transition-transform" />
+              </button>
+            )}
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="bg-gradient-to-br from-blue-700 via-blue-500 to-indigo-600 p-2.5 rounded-full shadow-[0_4px_20px_0_rgba(37,99,235,0.4)] group-hover:shadow-[0_8px_25px_rgba(37,99,235,0.5)] group-hover:scale-110 transition-all duration-300 text-white flex items-center justify-center border border-white/20 backdrop-blur-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <Plane size={24} className="group-hover:rotate-[20deg] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300 relative z-10" />
+              </div>
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-500 bg-clip-text text-transparent drop-shadow-sm group-hover:drop-shadow-md transition-all duration-300">
+                TripWell
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">

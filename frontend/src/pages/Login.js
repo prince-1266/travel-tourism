@@ -90,47 +90,59 @@ const Login = () => {
 
   return (
     <div
-      className={`h-screen flex items-center justify-center relative bg-theme-global ${theme} transition-colors duration-500`}
+      className="flex items-center justify-center relative text-white px-6 py-28 md:py-36"
     >
-      {/* overlay */}
-      <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/80' : 'bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-blue-900/40'}`} />
+      {/* PREMIUM GRADIENT OVERLAY (Subtle for content readability) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-blue-900/60 to-purple-950/80 z-0"></div>
+
+      {/* DYNAMIC GLOW ORBS */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.5, 0.3],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-blue-600 rounded-full blur-[120px] mix-blend-screen z-0"
+      ></motion.div>
+      <motion.div
+        animate={{
+          scale: [1.2, 1, 1.2],
+          opacity: [0.3, 0.4, 0.3],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[120px] mix-blend-screen z-0"
+      ></motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-md p-6 rounded-3xl
-        backdrop-blur-xl bg-white/90 shadow-xl"
+        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md p-10 rounded-[2.5rem]
+        bg-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100"
       >
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-5 left-5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all duration-300"
-        >
-          <ArrowLeft size={24} />
-        </button>
 
-        <h2 className="text-2xl font-bold text-center mb-1 mt-2">
-          Welcome to TripWell
+        <h2 className="text-4xl font-black text-center mb-2 mt-2 tracking-tight text-indigo-950 font-outfit uppercase">
+          Login
         </h2>
-        <p className="text-center text-gray-600 mb-4 text-sm">
-          Log in to continue your journey
+        <p className="text-center text-gray-500 mb-10 text-sm font-medium">
+          Welcome back! Please enter your details.
         </p>
 
         {/* ROLE SELECT */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           {["user", "admin"].map((role) => (
             <button
               key={role}
               type="button"
               onClick={() => setLoginRole(role)}
-              className={`p-3 rounded-2xl border text-left transition
+              className={`p-4 rounded-2xl border text-left transition-all duration-300
                 ${loginRole === role
-                  ? "border-indigo-600 bg-indigo-50"
-                  : "border-gray-300 bg-white"
+                  ? "border-yellow-400 bg-yellow-400/10 text-yellow-600 shadow-[0_0_20px_rgba(250,204,21,0.1)]"
+                  : "border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100"
                 }`}
             >
-              <p className="font-semibold capitalize">{role}</p>
-              <p className="text-xs text-gray-500">
+              <p className="font-bold capitalize text-sm">{role}</p>
+              <p className="text-[10px] opacity-60">
                 {role === "user"
                   ? "Book & manage trips"
                   : "Manage system"}
@@ -148,24 +160,24 @@ const Login = () => {
         <form onSubmit={handleLogin}>
 
           {/* IDENTIFIER INPUT */}
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-4">
             {/* Show Country Code only if not email */}
             {!isEmail && (
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="h-11 border border-gray-300 rounded-xl px-2 text-sm bg-white"
+                className="h-12 border border-gray-200 rounded-xl px-2 text-sm bg-gray-50 text-gray-900 focus:outline-none focus:border-yellow-400"
               >
-                <option value="+91">+91</option>
-                <option value="+1">+1</option>
-                <option value="+44">+44</option>
+                <option value="+91"> +91</option>
+                <option value="+1"> +1</option>
+                <option value="+44"> +44</option>
               </select>
             )}
 
             <input
               type="text"
               placeholder="Email or mobile number"
-              className="flex-1 h-11 border border-gray-300 rounded-xl px-4 text-sm"
+              className="flex-1 h-12 border border-gray-200 rounded-xl px-4 text-sm bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               value={identifier}
               onChange={(e) => {
                 const val = e.target.value;
@@ -179,11 +191,11 @@ const Login = () => {
             />
           </div>
 
-          <div className="relative mb-2">
+          <div className="relative mb-3">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="w-full h-11 border border-gray-300 rounded-xl px-4 pr-10 text-sm"
+              className="w-full h-12 border border-gray-200 rounded-xl px-4 pr-10 text-sm bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -191,27 +203,29 @@ const Login = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-gray-500"
+              className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
-          <div className="text-right mb-4">
+          <div className="text-right mb-6">
             <Link
               to="/forgot-password"
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-yellow-400 hover:text-yellow-300 hover:underline"
             >
               Forgot password?
             </Link>
           </div>
           <motion.button
+            whileHover={{ scale: 1.01, y: -1 }}
+            whileTap={{ scale: 0.99 }}
             type="submit"
             disabled={loading}
-            className="w-full h-11 bg-indigo-600 text-white rounded-xl
-                    font-semibold text-sm"
+            className="w-full h-14 bg-indigo-600 text-white rounded-2xl
+                    font-bold text-lg shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] transition-all duration-300 hover:bg-indigo-700 hover:shadow-[0_15px_25px_-5px_rgba(79,70,229,0.5)]"
           >
-            {loading ? "Logging in…" : "Log in 🚀"}
+            {loading ? "Logging in..." : "Login Now"}
           </motion.button>
         </form>
 
@@ -238,9 +252,9 @@ const Login = () => {
         )}
 
         {loginRole === "user" && (
-          <p className="text-xs text-center text-gray-600 mt-4">
+          <p className="text-xs text-center text-gray-500 mt-8">
             New user?{" "}
-            <Link to="/register" className="text-indigo-600 underline">
+            <Link to="/register" className="text-indigo-600 font-bold hover:underline">
               Create account
             </Link>
           </p>

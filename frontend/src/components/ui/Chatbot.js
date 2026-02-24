@@ -13,9 +13,28 @@ export default function Chatbot() {
     const scrollRef = useRef(null);
 
     useEffect(() => {
+        const handleOpenChat = (e) => {
+            setIsOpen(true);
+            if (e.detail?.message && typeof e.detail.message === 'string') {
+                setMessages(prev => [...prev, { role: "user", text: e.detail.message }]);
+                // Trigger AI response automatically
+                setLoading(true);
+                api.post("/ai/chat", { message: e.detail.message })
+                    .then(res => {
+                        setMessages(prev => [...prev, { role: "assistant", text: res.data.data.response }]);
+                    })
+                    .catch(() => {
+                        setMessages(prev => [...prev, { role: "assistant", text: "I'm here to help, but having a quick brain freeze. Try asking again! 🧊" }]);
+                    })
+                    .finally(() => setLoading(false));
+            }
+        };
+        window.addEventListener("open-chat", handleOpenChat);
+
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
+        return () => window.removeEventListener("open-chat", handleOpenChat);
     }, [messages, isOpen]);
 
     const handleSend = async (e) => {

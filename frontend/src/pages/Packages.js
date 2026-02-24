@@ -66,55 +66,55 @@ const packages = [
 
 const Packages = () => {
     return (
-        <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 min-h-screen py-24 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-5xl font-black text-white mb-4 drop-shadow-md">Popular Tour Packages</h1>
-                    <p className="text-xl text-blue-100 max-w-2xl mx-auto font-medium">
+                <div className="text-center mb-20">
+                    <h1 className="text-6xl md:text-8xl font-black text-white mb-6 uppercase tracking-tighter drop-shadow-2xl">Tour Packages</h1>
+                    <p className="text-2xl md:text-3xl text-blue-100/90 max-w-3xl mx-auto font-light leading-relaxed">
                         Choose from our most requested travel packages. Everything is included for a hassle-free experience.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {packages.map((pkg) => (
-                        <div key={pkg.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all duration-300 group">
-                            <div className="relative h-64 overflow-hidden border-b border-white/20">
+                        <div key={pkg.id} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 group transition-all duration-500 hover:-translate-y-4">
+                            <div className="relative h-72 overflow-hidden">
                                 <img
                                     src={pkg.image}
                                     alt={pkg.title}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
-                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1 text-sm font-semibold text-yellow-600 shadow-md">
-                                    <Star size={14} className="fill-yellow-600" />
+                                <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-md px-4 py-2 rounded-2xl flex items-center gap-2 text-indigo-950 font-black shadow-xl">
+                                    <Star size={18} className="fill-amber-400 text-amber-400" />
                                     {pkg.rating}
                                 </div>
                             </div>
 
-                            <div className="p-6">
-                                <div className="flex items-center gap-2 text-blue-300 text-sm font-semibold mb-2">
+                            <div className="p-8">
+                                <div className="flex items-center gap-2 text-indigo-600 font-black uppercase tracking-widest text-xs mb-3">
                                     <MapPin size={16} />
                                     {pkg.location}
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-4">{pkg.title}</h3>
+                                <h3 className="text-3xl font-black text-indigo-950 uppercase tracking-tight mb-6">{pkg.title}</h3>
 
-                                <div className="flex items-center justify-between text-blue-100/80 text-sm mb-6 font-medium">
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar size={16} />
+                                <div className="flex items-center gap-6 text-gray-500 font-bold text-sm mb-8">
+                                    <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+                                        <Calendar size={18} className="text-indigo-600" />
                                         {pkg.duration}
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Users size={16} />
+                                    <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl">
+                                        <Users size={18} className="text-indigo-600" />
                                         {pkg.people}
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-6 border-t border-white/10">
+                                <div className="flex items-center justify-between pt-8 border-t border-gray-50">
                                     <div>
-                                        <span className="text-2xl font-bold text-white">{pkg.price}</span>
-                                        <span className="text-blue-200/60 text-sm"> / person</span>
+                                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1 block">Per Person</span>
+                                        <span className="text-3xl font-black text-indigo-600 uppercase tracking-tighter">{pkg.price}</span>
                                     </div>
-                                    <button className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-3 rounded-full hover:shadow-lg hover:shadow-blue-500/40 transition-all hover:scale-105 active:scale-95">
-                                        <ArrowRight size={20} />
+                                    <button className="bg-indigo-600 text-white p-5 rounded-2xl hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 group-hover:scale-105 active:scale-95">
+                                        <ArrowRight size={24} />
                                     </button>
                                 </div>
                             </div>

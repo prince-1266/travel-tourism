@@ -96,47 +96,40 @@ export default function TripPlanner() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 bg-[url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')] bg-cover bg-fixed bg-center dark:bg-slate-900 transition-colors duration-300 relative">
-      <div className="absolute inset-0 bg-white/30 dark:bg-slate-900/50 backdrop-blur-sm z-0" />
-
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 text-gray-900 dark:text-white min-h-screen flex flex-col justify-center">
+    <div className="min-h-screen py-32 px-6">
+      <div className="max-w-4xl mx-auto flex flex-col justify-center min-h-[70vh]">
 
         {isSuccess ? (
-          <div className="flex flex-col items-center justify-center animate-in zoom-in duration-500">
-            <div className="bg-green-500 rounded-full p-4 mb-6 shadow-lg shadow-green-500/30">
-              <CheckCircle size={64} className="text-white" />
+          <div className="flex flex-col items-center justify-center animate-in zoom-in duration-700 bg-white rounded-[4rem] p-24 shadow-2xl border border-gray-100">
+            <div className="bg-indigo-600 rounded-full p-8 mb-10 shadow-2xl shadow-indigo-200 transform scale-125">
+              <CheckCircle size={80} className="text-white" />
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Trip Confirmed!</h2>
-            <p className="text-gray-600 dark:text-white/80 text-center text-lg">
-              Your booking ID is generated.<br />Redirecting to your bookings...
+            <h2 className="text-5xl md:text-7xl font-black text-indigo-950 mb-6 uppercase tracking-tighter text-center">Journey Locked</h2>
+            <p className="text-gray-400 font-bold text-center text-xl uppercase tracking-widest">
+              Awaiting departure.<br />Synchronizing terminal...
             </p>
           </div>
         ) : (
           <>
             {/* PROGRESS BAR */}
-            <div className="mb-8">
-              <div className="hidden md:flex justify-between text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white/50 mb-2">
-                <span>Plan</span>
-                <span>Travelers</span>
-                <span>Flight</span>
-                <span>Hotel</span>
-                <span>Review</span>
-                <span>Pay</span>
+            <div className="mb-12">
+              <div className="hidden md:flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-white/60 mb-4 px-2">
+                <span>01 Strategy</span>
+                <span>02 Manifest</span>
+                <span>03 Logistics</span>
+                <span>04 Habitat</span>
+                <span>05 Audit</span>
+                <span>06 Confirm</span>
               </div>
-              {/* Mobile labels */}
-              <div className="md:hidden flex justify-center text-sm font-bold text-gray-800 dark:text-white mb-2">
-                Step {currentStep} of 6
-              </div>
-
-              <div className="h-2 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
+              <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl border border-white/10">
                 <div
-                  className="h-full bg-indigo-600 dark:bg-yellow-400 transition-all duration-500 ease-out"
+                  className="h-full bg-indigo-500 transition-all duration-700 ease-out shadow-[0_0_20px_rgba(99,102,241,0.5)]"
                   style={{ width: `${(currentStep / 6) * 100}%` }}
                 />
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-12 shadow-2xl border border-gray-100 dark:border-white/10 relative overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] border border-gray-100 flex flex-col min-h-[60vh] relative overflow-hidden">
               {/* CONTENT AREA (Scrollable internal) */}
               <div className={`overflow-y-auto custom-scrollbar flex-1 pr-2 ${currentStep === 6 ? 'flex items-center justify-center' : ''}`}>
                 {currentStep === 1 && <Step1TripDetails data={tripData} updateData={setTripData} />}
@@ -149,23 +142,23 @@ export default function TripPlanner() {
 
               {/* NAVIGATION CONTROLS */}
               {currentStep < 6 && (
-                <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-100 dark:border-white/10 shrink-0">
+                <div className="flex justify-between items-center mt-12 pt-12 border-t border-gray-50 shrink-0">
                   <button
                     onClick={prevStep}
                     disabled={currentStep === 1}
-                    className={`flex items-center gap-2 px-4 py-3 md:px-6 rounded-xl font-medium transition text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10
+                    className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition text-gray-400 hover:text-indigo-600 hover:bg-indigo-50
                             ${currentStep === 1 ? "opacity-0 pointer-events-none" : ""}
                         `}
                   >
-                    <ChevronLeft size={18} /> Back
+                    <ChevronLeft size={18} /> Prev
                   </button>
 
                   <button
                     onClick={nextStep}
                     disabled={!isStepValid()}
-                    className="flex items-center gap-2 px-6 py-3 md:px-8 bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl font-semibold shadow-lg shadow-indigo-600/20 transition-all"
+                    className="flex items-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-100 disabled:text-gray-300 disabled:cursor-not-allowed rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-xl shadow-indigo-100 transition-all transform hover:-translate-y-1 active:scale-95"
                   >
-                    {currentStep === 5 ? "Proceed to Pay" : "Next Step"} <ChevronRight size={18} />
+                    {currentStep === 5 ? "Verify Checkout" : "Continue"} <ChevronRight size={18} />
                   </button>
                 </div>
               )}

@@ -198,39 +198,43 @@ export default function Register() {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center relative overflow-hidden bg-theme-global ${theme} transition-colors duration-500`}
+      className="flex items-center justify-center relative text-white px-6 py-28 md:py-36"
     >
-      {/* OVERLAY */}
-      <div className={`absolute inset-0 z-0 ${theme === 'dark' ? 'bg-black/80' : 'bg-gradient-to-br from-blue-700/70 via-indigo-700/70 to-purple-800/70'}`} />
+      {/* PREMIUM GRADIENT OVERLAY */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-blue-900/60 to-purple-950/80 z-0"></div>
 
-      {/* GLOW */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 bg-pink-400 rounded-full blur-3xl opacity-30"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl opacity-30"></div>
+      {/* DYNAMIC GLOW ORBS */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.5, 0.3],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-blue-600 rounded-full blur-[120px] mix-blend-screen z-0"
+      ></motion.div>
+      <motion.div
+        animate={{
+          scale: [1.2, 1, 1.2],
+          opacity: [0.3, 0.4, 0.3],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-32 -right-32 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[120px] mix-blend-screen z-0"
+      ></motion.div>
 
       {/* CARD */}
       <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+        initial={{ opacity: 0, y: 40, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 w-full max-w-md p-8 rounded-3xl
-                   backdrop-blur-xl
-                   bg-gradient-to-br from-white/95 via-white/85 to-white/75
-                   border border-white/40
-                   shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md p-10 rounded-[2.5rem]
+                   bg-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100"
       >
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-5 left-5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 p-2 rounded-full transition-all duration-300"
-        >
-          <ArrowLeft size={24} />
-        </button>
 
-        <h1 className="text-4xl font-bold text-center mb-2 text-gray-900 mt-2">
-          Create Account 🌍
+        <h1 className="text-4xl font-black text-center mb-2 text-indigo-950 font-outfit uppercase tracking-tight">
+          Register
         </h1>
-        <p className="text-center text-gray-600 mb-8">
-          Start your travel journey today
+        <p className="text-center text-gray-500 mb-10 font-medium">
+          Join us and start your journey!
         </p>
 
         {/* INLINE ERROR MESSAGE */}
@@ -246,7 +250,7 @@ export default function Register() {
           <div className={`${otpSent ? 'hidden' : 'block'} space-y-5`}>
             <input
               placeholder="Full Name"
-              className="w-full h-12 border rounded-xl px-4"
+              className="w-full h-12 border border-gray-200 rounded-xl px-4 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
@@ -255,7 +259,7 @@ export default function Register() {
             <input
               placeholder="Email Address"
               type="email"
-              className="w-full h-12 border rounded-xl px-4"
+              className="w-full h-12 border border-gray-200 rounded-xl px-4 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -264,21 +268,21 @@ export default function Register() {
             {/* MOBILE WITH COUNTRY CODE */}
             <div className="flex gap-2">
               <select
-                className="h-12 rounded-xl border px-2 bg-white"
+                className="h-12 border border-gray-200 rounded-xl px-2 bg-gray-50 text-gray-900 focus:outline-none focus:border-yellow-400"
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
               >
-                <option value="+91">+91</option>
-                <option value="+1">+1</option>
-                <option value="+44">+44</option>
-                <option value="+61">+61</option>
-                <option value="+971">+971</option>
+                <option value="+91"> +91</option>
+                <option value="+1"> +1</option>
+                <option value="+44"> +44</option>
+                <option value="+61"> +61</option>
+                <option value="+971"> +971</option>
               </select>
 
               <input
                 type="text"
                 placeholder="Mobile Number"
-                className="flex-1 h-12 rounded-xl border px-4"
+                className="flex-1 h-12 border border-gray-200 rounded-xl px-4 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
                 value={mobile}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, "");
@@ -296,12 +300,12 @@ export default function Register() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Password"
-                className="w-full h-12 border rounded-xl px-4 pr-10"
+                className="w-full h-12 border border-gray-200 rounded-xl px-4 pr-10 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3.5 text-gray-500"
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -315,12 +319,12 @@ export default function Register() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 placeholder="Confirm Password"
-                className="w-full h-12 border rounded-xl px-4 pr-10"
+                className="w-full h-12 border border-gray-200 rounded-xl px-4 pr-10 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-yellow-400"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3.5 text-gray-500"
+                className="absolute right-3 top-3.5 text-gray-400 hover:text-indigo-600"
               >
                 {showConfirmPassword ? (
                   <EyeOff size={20} />
@@ -375,14 +379,14 @@ export default function Register() {
           )}
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.01, y: -1 }}
+            whileTap={{ scale: 0.99 }}
             type="submit"
             disabled={loading}
-            className="w-full h-12 bg-yellow-400 text-indigo-900
-                       rounded-xl font-semibold shadow-lg mt-4"
+            className="w-full h-14 bg-indigo-600 text-white
+                       rounded-2xl font-bold text-lg shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] mt-4 transition-all duration-300 hover:bg-indigo-700 hover:shadow-[0_15px_25px_-5px_rgba(79,70,229,0.5)]"
           >
-            {loading ? "Processing..." : (otpSent ? "Verify & Register 🚀" : "Send OTP 📩")}
+            {loading ? "Processing..." : (otpSent ? "Verify & Register" : "Send OTP")}
           </motion.button>
 
         </form>
@@ -418,11 +422,11 @@ export default function Register() {
           </div>
         )}
 
-        <p className="text-center text-gray-600 mt-6">
+        <p className="text-center text-gray-500 mt-8">
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-semibold text-indigo-600 underline"
+            className="font-bold text-indigo-600 hover:underline"
           >
             Login
           </Link>
