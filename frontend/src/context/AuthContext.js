@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
   const { success, info } = useNotification();
 
   const login = (userData, isUpdate = false) => {
+    // Normalize Admin Name
+    if (userData.name === "System Admin" || (userData.role === "admin" && !userData.name)) {
+      userData.name = "Prince Modh.";
+    }
     setUser(userData);
     localStorage.setItem("loggedInUser", JSON.stringify(userData));
     if (!isUpdate) {

@@ -52,7 +52,7 @@ export default function Dashboard() {
             <h1 className="text-2xl md:text-3xl font-black text-white mb-1 uppercase tracking-tighter leading-[0.9] drop-shadow-2xl">
               Welcome Back,<br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-100 to-blue-200">
-                {user?.name?.split(" ")[0]}! ✈️
+                {user?.name === "System Admin" ? "Prince Modh." : (user?.name || "Traveller")}! ✈️
               </span>
             </h1>
             <p className="text-sm text-blue-100/60 font-medium tracking-tight">

@@ -1,5 +1,5 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, Map, Calendar, User, Settings, Home, Mountain, Heart, MessageSquare, Moon, Sun, ChevronDown, Lock, Trash2, Menu, X, ArrowLeft } from "lucide-react";
+import { LogOut, Map, Plane, Calendar, User, Settings, Home, Mountain, Heart, MessageSquare, Moon, Sun, ChevronDown, Lock, Trash2, Menu, X, ArrowLeft } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -39,6 +39,7 @@ export default function AppLayout() {
     // Navigation Items
     const NavItems = [
         { icon: Map, label: "Destinations", path: "/app/dashboard" },
+        { icon: Plane, label: "Flights", path: "/app/flights" },
         { icon: Heart, label: "Wishlist", path: "/app/wishlist" },
         // { icon: MessageSquare, label: "Chat", action: "chat" }, // Chat is floating
         { icon: Calendar, label: "My Bookings", path: "/app/mybookings" },

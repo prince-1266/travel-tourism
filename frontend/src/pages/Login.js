@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import api from "../api/axios";
 import { GoogleLogin } from "@react-oauth/google";
 
 import { useNotification } from "../context/NotificationContext";
@@ -29,7 +30,7 @@ const Login = () => {
   /* ================= GOOGLE LOGIN ================= */
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/google", {
+      const res = await api.post("/auth/google", {
         token: credentialResponse.credential,
       });
 
@@ -59,8 +60,8 @@ const Login = () => {
       : countryCode + identifier;
 
     try {
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+      const res = await api.post(
+        "/auth/login",
         {
           identifier: finalIdentifier,
           password,
@@ -218,14 +219,16 @@ const Login = () => {
             </button>
           </div>
 
-          <div className="text-right mb-6">
-            <Link
-              to="/forgot-password"
-              className="text-xs text-yellow-400 hover:text-yellow-300 hover:underline"
-            >
-              Forgot password?
-            </Link>
-          </div>
+          {loginRole === "user" && (
+            <div className="text-right mb-6">
+              <Link
+                to="/forgot-password"
+                className="text-xs text-yellow-400 hover:text-yellow-300 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
           <motion.button
             whileHover={{ scale: 1.01, y: -1 }}
             whileTap={{ scale: 0.99 }}

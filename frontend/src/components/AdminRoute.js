@@ -9,11 +9,7 @@ const AdminRoute = ({ children }) => {
 
   const isAuthorized = token && user && user.role === "admin";
 
-  useEffect(() => {
-    if (!isAuthorized) {
-      warning("Admin access required. Redirecting...");
-    }
-  }, [isAuthorized]);
+  // Redirect happens via conditional return below
 
   if (!isAuthorized) {
     return <Navigate to="/login" replace />;

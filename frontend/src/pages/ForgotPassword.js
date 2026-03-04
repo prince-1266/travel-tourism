@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
+import api from "../api/axios";
 import { useNotification } from "../context/NotificationContext";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -63,7 +64,7 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/send-otp", payload);
+      const res = await api.post("/auth/send-otp", payload);
 
       if (res.data.success) {
         notifySuccess(res.data.message); // "OTP sent to email..."
@@ -103,7 +104,7 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/verify-otp-reset", payload);
+      const res = await api.post("/auth/verify-otp-reset", payload);
 
       if (res.data.success) {
         notifySuccess("Password reset successfully!");

@@ -41,7 +41,6 @@ export const getFlights = async (req, res) => {
         let flights = await Flight.find();
 
         if (flights.length === 0) {
-            console.log("Seeding initial flights...");
             await Flight.insertMany(SAMPLE_FLIGHTS);
             flights = await Flight.find();
         }

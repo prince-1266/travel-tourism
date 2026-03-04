@@ -1,8 +1,12 @@
 import express from "express";
 import User from "../models/User.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
+import { getAdminStats } from "../controllers/adminController.js";
 
 const router = express.Router();
+
+/* GET DASHBOARD STATS */
+router.get("/stats", protect, adminOnly, getAdminStats);
 
 /* GET ALL USERS */
 router.get("/users", protect, adminOnly, async (req, res) => {

@@ -1,10 +1,12 @@
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
 
 export default function ManageFlights() {
   const { theme } = useTheme();
+  const navigate = useNavigate();
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -45,6 +47,7 @@ export default function ManageFlights() {
         seats: "", time: "", duration: "", type: "Non-stop"
       });
       alert("Flight added successfully!");
+      navigate("/app/flights");
     } catch (err) {
       alert("Failed to add flight");
     }

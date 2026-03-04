@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import axios from 'axios';
+import api from "../api/axios";
 import { useNotification } from '../context/NotificationContext';
 
 const Contact = () => {
@@ -23,7 +24,7 @@ const Contact = () => {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:5000/api/contact', formData);
+            await api.post('/contact', formData);
             success('Message sent successfully! We will get back to you soon.');
             setFormData({
                 firstName: '',

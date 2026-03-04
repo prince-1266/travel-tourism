@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
+import mongoose from "mongoose";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -165,11 +166,11 @@ router.post("/send-otp", async (req, res) => {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: targetEmail,
-        subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - TripWell`,
+        subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - Prince Modh. (TripWell)`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h2 style="color: #4F46E5;">TripWell 🌍</h2>
+              <h2 style="color: #4F46E5;">Prince Modh. (TripWell) 🌍</h2>
             </div>
             <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
               <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
@@ -183,7 +184,7 @@ router.post("/send-otp", async (req, res) => {
               </p>
             </div>
             <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af;">
-              <p>&copy; ${new Date().getFullYear()} TripWell. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} Prince Modh. All rights reserved.</p>
             </div>
           </div>
         `,

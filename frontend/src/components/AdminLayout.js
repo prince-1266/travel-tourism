@@ -8,7 +8,7 @@ import { useState, useRef, useEffect } from "react";
 export default function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { info } = useNotification();
     const { theme, toggleTheme } = useTheme();
 
@@ -28,9 +28,7 @@ export default function AdminLayout() {
     }, []);
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("loggedInUser");
-        info("Logged out successfully");
+        logout();
         navigate("/");
     };
 
@@ -63,7 +61,7 @@ export default function AdminLayout() {
                         <div className="bg-red-600 p-2 rounded-lg group-hover:scale-105 transition-transform">
                             <Mountain className="text-white" size={24} />
                         </div>
-                        <h1 className="text-2xl font-bold text-white tracking-wide">TripPlanner Admin</h1>
+                        <h1 className="text-2xl font-bold text-white tracking-wide">TripWell Admin</h1>
                     </div>
                 </div>
 
@@ -77,7 +75,7 @@ export default function AdminLayout() {
                             className="flex items-center gap-3 bg-red-600 hover:bg-red-700 px-4 py-2.5 rounded-full transition shadow-lg shadow-red-900/20"
                         >
                             <User size={18} className="text-white/90" />
-                            <span className="text-white font-semibold text-sm hidden lg:block max-w-[150px] truncate">{user?.name || "Admin"}</span>
+                            <span className="text-white font-semibold text-sm hidden lg:block max-w-[150px] truncate">{user?.name === "System Admin" ? "Prince Modh." : (user?.name || "Prince Modh.")}</span>
                             <ChevronDown className={`text-white/70 transition-transform ${profileOpen ? 'rotate-180' : ''}`} size={16} />
                         </button>
 
@@ -86,7 +84,7 @@ export default function AdminLayout() {
                             <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
                                 {/* USER INFO HEADER */}
                                 <div className="p-4 border-b border-gray-100 bg-gray-50">
-                                    <p className="font-bold text-gray-900">Admin Account</p>
+                                    <p className="font-bold text-gray-900">{user?.name === "System Admin" ? "Prince Modh." : (user?.name || "Prince Modh.")} (Admin)</p>
                                     <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                                 </div>
 

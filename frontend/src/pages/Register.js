@@ -111,7 +111,7 @@ export default function Register() {
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/send-otp", {
+      const res = await api.post("/auth/send-otp", {
         phone: countryCode + mobile,
         email, // Send email for OTP delivery
         type: "register"
@@ -145,21 +145,17 @@ export default function Register() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: fullName,
-          email,
-          phone: countryCode + mobile,
-          password,
-          otp: otpValue
-        }),
+      const res = await api.post("/auth/register", {
+        name: fullName,
+        email,
+        phone: countryCode + mobile,
+        password,
+        otp: otpValue
       });
 
-      const data = await res.json();
+      const data = res.data;
 
-      if (!res.ok) {
+      if (res.status !== 200 && res.status !== 201) {
         setError(data.message);
         notifyError(data.message);
         setLoading(false);
@@ -183,7 +179,7 @@ export default function Register() {
   /* ================= GOOGLE LOGIN ================= */
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/google", {
+      const res = await api.post("/auth/google", {
         token: credentialResponse.credential,
       });
 
