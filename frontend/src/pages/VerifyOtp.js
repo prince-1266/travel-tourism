@@ -97,7 +97,7 @@ const VerifyOtp = () => {
                 onChange={(e) => handleChange(e.target.value, i)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
                 className="w-11 h-11 text-center text-lg font-bold
-                           border border-gray-300 rounded-xl
+                           border border-gray-300 rounded-xl text-gray-900
                            focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
               />
             ))}

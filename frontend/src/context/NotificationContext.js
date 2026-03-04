@@ -45,6 +45,26 @@ export const NotificationProvider = ({ children }) => {
     }, []);
 
     const addNotification = useCallback((type, message, duration = 4000) => {
+        // Retrieve user preferences from localStorage
+        const storedUser = localStorage.getItem("loggedInUser");
+        let pushEnabled = true;
+        if (storedUser) {
+            try {
+                const user = JSON.parse(storedUser);
+                pushEnabled = user.notifications?.pushNotifications !== false;
+            } catch (e) {
+                console.error("Error parsing loggedInUser for notifications:", e);
+            }
+        }
+
+        // Suppress notification if push is disabled, 
+        // BUT always allow:
+        // 1. Errors (critical feedback)
+        // 2. Toggling push notifications themselves (so user knows it worked)
+        if (!pushEnabled && type !== "error") {
+            return;
+        }
+
         const id = Date.now() + Math.random();
         setNotifications((prev) => [...prev, { id, type, message }]);
 

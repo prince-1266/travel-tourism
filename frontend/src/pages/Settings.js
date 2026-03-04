@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User, Lock, Bell, Moon, Sun,
   LogOut, ChevronRight, Shield,
   CreditCard, Trash2, Save, Mail,
   Phone, Loader, Settings as SettingsIcon,
-  Globe, Landmark, Smartphone, Sparkles
+  Globe, Landmark, Smartphone, Sparkles,
+  Eye, EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../api/axios";
@@ -27,17 +28,33 @@ export default function Settings() {
     phone: user?.phone || "",
   });
 
+  // Notification State
+  const [notificationData, setNotificationData] = useState({
+    pushNotifications: user?.notifications?.pushNotifications ?? true,
+    emailUpdates: user?.notifications?.emailUpdates ?? true,
+  });
+
   // Password Form State
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+    showCurrentPassword: false,
+    showNewPassword: false,
+    showConfirmPassword: false
   });
 
   // OTP Reset State
   const [isOtpMode, setIsOtpMode] = useState(false);
   const [otpStep, setOtpStep] = useState("init"); // init | verify
-  const [otpData, setOtpData] = useState({ otp: "", newPassword: "", confirmPassword: "" });
+  const [otpData, setOtpData] = useState({
+    otp: ["", "", "", "", "", ""],
+    newPassword: "",
+    confirmPassword: "",
+    showNewPassword: false,
+    showConfirmPassword: false
+  });
+  const otpInputRefs = useRef([]);
   const [timeLeft, setTimeLeft] = useState(0);
   const [canResend, setCanResend] = useState(false);
 
@@ -66,6 +83,7 @@ export default function Settings() {
       });
       success(res.data.message || "OTP sent to your email.");
       setOtpStep("verify");
+      setOtpData({ ...otpData, otp: ["", "", "", "", "", ""] }); // Reset OTP boxes
       setTimeLeft(60); // Start 60s countdown
       setCanResend(false);
     } catch (err) {
@@ -85,13 +103,13 @@ export default function Settings() {
     try {
       await api.post("/auth/verify-otp-reset", {
         email: user.email,
-        otp: otpData.otp,
+        otp: otpData.otp.join(""),
         newPassword: otpData.newPassword
       });
       success("Password updated successfully via OTP.");
       setIsOtpMode(false);
       setOtpStep("init");
-      setOtpData({ otp: "", newPassword: "", confirmPassword: "" });
+      setOtpData({ otp: ["", "", "", "", "", ""], newPassword: "", confirmPassword: "" });
     } catch (err) {
       notifyError(err.response?.data?.message || "Failed to verify OTP");
     } finally {
@@ -104,7 +122,7 @@ export default function Settings() {
     setLoading(true);
     try {
       const res = await api.put("/auth/me", profileData);
-      login(res.data.user);
+      login(res.data.user, true);
       success("Profile updated successfully");
     } catch (err) {
       notifyError(err.response?.data?.message || "Failed to update profile");
@@ -146,9 +164,22 @@ export default function Settings() {
     }
   };
 
-  const togglePreference = (key) => {
-    // We only have notifications left for now
-    success("Notification updated");
+  const togglePreference = async (key) => {
+    const newVal = !notificationData[key];
+    const updatedData = { ...notificationData, [key]: newVal };
+    setNotificationData(updatedData);
+
+    try {
+      const res = await api.put("/auth/me", {
+        notifications: updatedData
+      });
+      login(res.data.user, true); // Update auth context (silent update)
+      success(`${key === "pushNotifications" ? "Push notifications" : "Email updates"} updated`);
+    } catch (err) {
+      notifyError("Failed to update notification preference");
+      // Rollback local state on failure
+      setNotificationData(notificationData);
+    }
   };
 
   return (
@@ -226,8 +257,18 @@ export default function Settings() {
                   <div className="space-y-10">
                     <SectionHeader title="Notification Alerts" subtitle="Stay updated on your bookings and system alerts." icon={<Bell size={24} />} />
                     <div className="space-y-6">
-                      <ToggleGroup label="Push Notifications" description="Receive alerts on your device for immediate booking updates." active={true} onClick={() => togglePreference("pushNotifications")} />
-                      <ToggleGroup label="Email Updates" description="Weekly newsletters and transaction invoices sent to your inbox." active={true} onClick={() => togglePreference("emailUpdates")} />
+                      <ToggleGroup
+                        label="Push Notifications"
+                        description="Receive alerts on your device for immediate booking updates."
+                        active={notificationData.pushNotifications}
+                        onClick={() => togglePreference("pushNotifications")}
+                      />
+                      <ToggleGroup
+                        label="Email Updates"
+                        description="Weekly newsletters and transaction invoices sent to your inbox."
+                        active={notificationData.emailUpdates}
+                        onClick={() => togglePreference("emailUpdates")}
+                      />
                     </div>
                   </div>
                 )}
@@ -243,16 +284,55 @@ export default function Settings() {
 
                     {!isOtpMode ? (
                       <form onSubmit={handlePasswordChange} className="space-y-6">
-                        <InputGroup
-                          label="Current Password"
-                          type="password"
-                          icon={<Lock size={16} />}
-                          value={passwordData.currentPassword}
-                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <InputGroup label="New Password" type="password" icon={<Lock size={16} />} value={passwordData.newPassword} onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })} />
-                          <InputGroup label="Confirm" type="password" icon={<Lock size={16} />} value={passwordData.confirmPassword} onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} />
+                        <div className="relative">
+                          <InputGroup
+                            label="Current Password"
+                            type={passwordData.showCurrentPassword ? "text" : "password"}
+                            icon={<Lock size={16} />}
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setPasswordData({ ...passwordData, showCurrentPassword: !passwordData.showCurrentPassword })}
+                            className="absolute right-4 top-[38px] text-gray-400 hover:text-indigo-600 transition-colors"
+                          >
+                            {passwordData.showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                        <div className="space-y-6">
+                          <div className="relative">
+                            <InputGroup
+                              label="New Password"
+                              type={passwordData.showNewPassword ? "text" : "password"}
+                              icon={<Lock size={16} />}
+                              value={passwordData.newPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setPasswordData({ ...passwordData, showNewPassword: !passwordData.showNewPassword })}
+                              className="absolute right-4 top-[38px] text-gray-400 hover:text-indigo-600 transition-colors"
+                            >
+                              {passwordData.showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <InputGroup
+                              label="Confirm Password"
+                              type={passwordData.showConfirmPassword ? "text" : "password"}
+                              icon={<Lock size={16} />}
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setPasswordData({ ...passwordData, showConfirmPassword: !passwordData.showConfirmPassword })}
+                              className="absolute right-4 top-[38px] text-gray-400 hover:text-indigo-600 transition-colors"
+                            >
+                              {passwordData.showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
                         </div>
                         <div className="pt-6 flex flex-col items-center gap-4">
                           <SubmitButton loading={loading} label="Secure Account" />
@@ -290,55 +370,159 @@ export default function Settings() {
                             </div>
                           </div>
                         ) : (
-                          <form onSubmit={handleVerifyOtpReset} className="space-y-6">
-                            <div className="flex flex-col md:flex-row md:items-end gap-6">
-                              <div className="flex-grow">
-                                <InputGroup
-                                  label="Enter 6-digit OTP"
-                                  icon={<Sparkles size={16} />}
-                                  value={otpData.otp}
-                                  onChange={(e) => setOtpData({ ...otpData, otp: e.target.value.slice(0, 6) })}
-                                />
-                              </div>
-                              <div className="pb-2 md:pb-4 flex items-center justify-between md:justify-end gap-6 px-4">
-                                {timeLeft > 0 ? (
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
-                                    <span className="text-xs font-black text-indigo-950 tabular-nums">
-                                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
-                                    </span>
+                          otpStep === "verify" ? (
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                const otpValue = otpData.otp.join("");
+                                if (otpValue.length === 6) {
+                                  setOtpStep("reset-password");
+                                } else {
+                                  notifyError("Please enter a valid 6-digit OTP");
+                                }
+                              }}
+                              className="space-y-10 flex flex-col items-center"
+                            >
+                              <div className="space-y-4 w-full flex flex-col items-center text-center">
+                                <label className="block text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">
+                                  Enter 6-digit OTP
+                                </label>
+                                <div className="flex flex-col items-center gap-6">
+                                  <div className="flex gap-2">
+                                    {otpData.otp.map((digit, index) => (
+                                      <input
+                                        key={index}
+                                        type="text"
+                                        maxLength="1"
+                                        ref={(el) => (otpInputRefs.current[index] = el)}
+                                        value={digit}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (isNaN(val)) return;
+                                          const newOtp = [...otpData.otp];
+                                          newOtp[index] = val;
+                                          setOtpData({ ...otpData, otp: newOtp });
+                                          if (val !== "" && index < 5)
+                                            otpInputRefs.current[index + 1].focus();
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (
+                                            e.key === "Backspace" &&
+                                            !otpData.otp[index] &&
+                                            index > 0
+                                          ) {
+                                            otpInputRefs.current[index - 1].focus();
+                                          }
+                                        }}
+                                        className="w-10 h-12 bg-gray-50 border border-gray-100 rounded-xl text-center text-indigo-950 text-lg font-black focus:outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-400 transition-all shadow-inner"
+                                      />
+                                    ))}
                                   </div>
-                                ) : (
-                                  <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">Expired</span>
-                                )}
+                                  <div className="flex items-center gap-6">
+                                    {timeLeft > 0 ? (
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                                        <span className="text-xs font-black text-indigo-950 tabular-nums">
+                                          {Math.floor(timeLeft / 60)}:
+                                          {(timeLeft % 60).toString().padStart(2, "0")}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest">
+                                        Expired
+                                      </span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      disabled={!canResend || loading}
+                                      onClick={handleSendOtp}
+                                      className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all
+                                      ${canResend && !loading
+                                          ? "text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                                          : "text-gray-300 cursor-not-allowed"
+                                        }`}
+                                    >
+                                      Resend
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-4 pt-4 w-full max-w-sm justify-center">
                                 <button
                                   type="button"
-                                  disabled={!canResend || loading}
-                                  onClick={handleSendOtp}
-                                  className={`text-[10px] font-black uppercase tracking-[0.2em] transition-all
-                                    ${canResend && !loading
-                                      ? "text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
-                                      : "text-gray-300 cursor-not-allowed"}`}
+                                  onClick={() => setOtpStep("init")}
+                                  className="flex-1 px-8 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all"
                                 >
-                                  Resend OTP
+                                  Back
                                 </button>
+                                <SubmitButton
+                                  className="flex-1"
+                                  loading={loading}
+                                  label="Continue"
+                                />
                               </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                              <InputGroup label="New Password" type="password" icon={<Lock size={16} />} value={otpData.newPassword} onChange={(e) => setOtpData({ ...otpData, newPassword: e.target.value })} />
-                              <InputGroup label="Confirm" type="password" icon={<Lock size={16} />} value={otpData.confirmPassword} onChange={(e) => setOtpData({ ...otpData, confirmPassword: e.target.value })} />
-                            </div>
-                            <div className="flex gap-4 pt-6">
-                              <button
-                                type="button"
-                                onClick={() => setOtpStep("init")}
-                                className="px-8 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all"
-                              >
-                                Back
-                              </button>
-                              <SubmitButton loading={loading} label="Verify & Reset" />
-                            </div>
-                          </form>
+                            </form>
+                          ) : (
+                            <form
+                              onSubmit={handleVerifyOtpReset}
+                              className="space-y-10 flex flex-col items-center"
+                            >
+                              <div className="w-full max-w-sm space-y-6">
+                                <div className="relative">
+                                  <InputGroup
+                                    label="New Password"
+                                    type={otpData.showNewPassword ? "text" : "password"}
+                                    icon={<Lock size={16} />}
+                                    value={otpData.newPassword}
+                                    onChange={(e) =>
+                                      setOtpData({ ...otpData, newPassword: e.target.value })
+                                    }
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setOtpData({ ...otpData, showNewPassword: !otpData.showNewPassword })}
+                                    className="absolute right-4 top-[38px] text-gray-400 hover:text-indigo-600 transition-colors"
+                                  >
+                                    {otpData.showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                  </button>
+                                </div>
+                                <div className="relative">
+                                  <InputGroup
+                                    label="Confirm Password"
+                                    type={otpData.showConfirmPassword ? "text" : "password"}
+                                    icon={<Lock size={16} />}
+                                    value={otpData.confirmPassword}
+                                    onChange={(e) =>
+                                      setOtpData({ ...otpData, confirmPassword: e.target.value })
+                                    }
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setOtpData({ ...otpData, showConfirmPassword: !otpData.showConfirmPassword })}
+                                    className="absolute right-4 top-[38px] text-gray-400 hover:text-indigo-600 transition-colors"
+                                  >
+                                    {otpData.showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-4 pt-4 w-full max-w-sm justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => setOtpStep("verify")}
+                                  className="flex-1 px-8 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all"
+                                >
+                                  Back
+                                </button>
+                                <SubmitButton
+                                  className="flex-1"
+                                  loading={loading}
+                                  label="Verify & Reset"
+                                />
+                              </div>
+                            </form>
+                          )
                         )}
                       </div>
                     )}

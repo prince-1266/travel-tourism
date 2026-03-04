@@ -92,6 +92,15 @@ const Login = () => {
     <div
       className="flex items-center justify-center relative text-white px-6 py-28 md:py-36"
     >
+      {/* BACK BUTTON */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed top-8 left-8 z-50 bg-white/10 hover:bg-white/20 p-2.5 rounded-full text-white transition-all backdrop-blur-md border border-white/10 shadow-2xl group"
+        aria-label="Go Home"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+      </button>
+
       {/* PREMIUM GRADIENT OVERLAY (Subtle for content readability) */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-blue-900/60 to-purple-950/80 z-0"></div>
 

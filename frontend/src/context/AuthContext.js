@@ -17,10 +17,12 @@ export const AuthProvider = ({ children }) => {
   /* LOGIN */
   const { success, info } = useNotification();
 
-  const login = (userData) => {
+  const login = (userData, isUpdate = false) => {
     setUser(userData);
     localStorage.setItem("loggedInUser", JSON.stringify(userData));
-    success(`Welcome back, ${userData.name || "Traveller"}!`);
+    if (!isUpdate) {
+      success(`Welcome back, ${userData.name || "Traveller"}!`);
+    }
   };
 
   /* LOGOUT */

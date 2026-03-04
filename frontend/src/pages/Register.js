@@ -200,6 +200,15 @@ export default function Register() {
     <div
       className="flex items-center justify-center relative text-white px-6 py-28 md:py-36"
     >
+      {/* BACK BUTTON */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed top-8 left-8 z-50 bg-white/10 hover:bg-white/20 p-2.5 rounded-full text-white transition-all backdrop-blur-md border border-white/10 shadow-2xl group"
+        aria-label="Go Home"
+      >
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+      </button>
+
       {/* PREMIUM GRADIENT OVERLAY */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/80 via-blue-900/60 to-purple-950/80 z-0"></div>
 
@@ -357,7 +366,7 @@ export default function Register() {
                     value={data}
                     onChange={(e) => handleOtpChange(e.target, index)}
                     onKeyDown={(e) => handleBackspace(e, index)}
-                    className="w-12 h-14 border-2 border-indigo-200 focus:border-indigo-600 rounded-xl text-center text-2xl font-bold bg-white focus:outline-none transition-colors"
+                    className="w-12 h-14 border-2 border-indigo-200 focus:border-indigo-600 rounded-xl text-center text-2xl font-bold bg-white text-indigo-950 focus:outline-none transition-colors"
                   />
                 ))}
               </div>

@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
     },
 
     wishlist: [{ type: String }], // Store destination IDs
+    notifications: {
+      pushNotifications: { type: Boolean, default: true },
+      emailUpdates: { type: Boolean, default: true },
+    },
   },
   { timestamps: true }
 );

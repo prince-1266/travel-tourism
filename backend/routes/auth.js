@@ -52,6 +52,7 @@ router.post("/google", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        notifications: user.notifications
       },
     });
   } catch (err) {
@@ -374,6 +375,7 @@ router.post("/login", async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        notifications: user.notifications
       },
     });
   } catch (err) {
@@ -409,6 +411,13 @@ router.put("/me", protect, async (req, res) => {
       user.email = email;
     }
 
+    if (req.body.notifications) {
+      user.notifications = {
+        ...user.notifications,
+        ...req.body.notifications
+      };
+    }
+
     await user.save();
 
     res.json({
@@ -419,7 +428,8 @@ router.put("/me", protect, async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        phone: user.phone
+        phone: user.phone,
+        notifications: user.notifications
       }
     });
   } catch (err) {
