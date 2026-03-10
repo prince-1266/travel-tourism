@@ -1,3 +1,2 @@
-import fs from 'fs';
-fs.writeFileSync('node_works.txt', 'Node seems to work!');
-console.log('Node works');
+console.log("NODE_WORKS");
+process.exit(0);

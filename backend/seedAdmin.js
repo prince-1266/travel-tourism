@@ -9,7 +9,7 @@ const seedAdmin = async () => {
         console.log(`Connected to: ${mongoose.connection.name}`);
         console.log(`URI being used: ${process.env.MONGO_URI.replace(/\/\/.*@/, "//***@")}`); // Hide credentials
 
-        const adminEmail = process.env.ADMIN_EMAIL || "modhprince12663515@gmail.com";
+        const adminEmail = process.env.ADMIN_EMAIL || "tripwell.support@gmail.com";
         const adminPhone = process.env.ADMIN_PHONE || "+916353248918";
         const adminPassword = "123456";
 
@@ -21,9 +21,12 @@ const seedAdmin = async () => {
         });
 
         if (existingAdmin) {
-            console.log("Admin user found in DB. Updating role and name...");
+            console.log("Admin user found in DB. Updating role, name, email, and password...");
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
             existingAdmin.role = "admin";
             existingAdmin.name = "Prince Modh.";
+            existingAdmin.email = adminEmail;
+            existingAdmin.password = hashedPassword; // Force update password
             await existingAdmin.save();
             console.log("Admin user updated successfully.");
         } else {

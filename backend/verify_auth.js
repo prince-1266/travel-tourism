@@ -18,7 +18,7 @@ async function verify() {
         // 1. Invalid Email Format
         log('\n--- Test 1: Invalid Email Format ---');
         try {
-            await axios.post('http://localhost:5000/api/auth/send-otp', {
+            await axios.post('http://localhost:5001/api/auth/send-otp', {
                 email: 'invalid-email',
                 type: 'register'
             });
@@ -40,7 +40,7 @@ async function verify() {
         // 2. Login User Not Found
         log('\n--- Test 2: Login User Not Found ---');
         try {
-            await axios.post('http://localhost:5000/api/auth/login', {
+            await axios.post('http://localhost:5001/api/auth/login', {
                 identifier: 'nonexistent@example.com',
                 password: 'password123',
                 role: 'user'
@@ -69,7 +69,7 @@ async function verify() {
         // First Create a user
         const uniqueEmail = `test_${Date.now()}@example.com`;
         try {
-            await axios.post('http://localhost:5000/api/auth/register', {
+            await axios.post('http://localhost:5001/api/auth/register', {
                 name: 'Test User',
                 email: uniqueEmail,
                 phone: `99${Date.now().toString().slice(-8)}`, // verify unique phone length

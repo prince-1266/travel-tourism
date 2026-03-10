@@ -14,7 +14,7 @@ const checkAdmin = async () => {
             console.warn("WARNING: You are NOT connected to 'tourdb'. You are connected to:", mongoose.connection.name);
         }
 
-        const admin = await User.findOne({ email: "modhprince12663515@gmail.com" });
+        const admin = await User.findOne({ email: process.env.ADMIN_EMAIL });
 
         if (admin) {
             console.log("SUCCESS: Admin user found!");

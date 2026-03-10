@@ -10,6 +10,33 @@ import { protect } from "../middleware/authMiddleware.js";
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+/* ================= DIAGNOSTIC ROUTE ================= */
+router.get("/diag", async (req, res) => {
+  try {
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    const colNames = collections.map(c => c.name);
+
+    // Check 'users' collection (standard)
+    const adminInUsers = await User.findOne({ email: process.env.ADMIN_EMAIL });
+
+    // Check 'admin' collection (suspicious from screenshot)
+    const adminCol = mongoose.connection.db.collection("admin");
+    const adminInAdminCol = await adminCol.findOne({ email: process.env.ADMIN_EMAIL });
+
+    res.json({
+      dbName: mongoose.connection.name,
+      collections: colNames,
+      adminEmailInEnv: process.env.ADMIN_EMAIL,
+      adminFoundInUsers: !!adminInUsers,
+      adminFoundInAdminCol: !!adminInAdminCol,
+      adminDetailsInUsers: adminInUsers ? { email: adminInUsers.email, role: adminInUsers.role } : null,
+      adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ================= GOOGLE LOGIN ================= */
 router.post("/google", async (req, res) => {
   const { token } = req.body;
@@ -82,13 +109,16 @@ router.post("/send-otp", async (req, res) => {
 
   try {
     let targetEmail = email;
+    if (targetEmail) {
+      targetEmail = targetEmail.trim().toLowerCase();
+    }
     let targetPhone = phone;
     let user = null;
 
     if (phone) {
       user = await User.findOne({ phone });
-    } else if (email) {
-      user = await User.findOne({ email });
+    } else if (targetEmail) {
+      user = await User.findOne({ email: targetEmail });
       if (user) targetPhone = user.phone;
     }
 
@@ -156,13 +186,16 @@ router.post("/send-otp", async (req, res) => {
       return res.status(400).json({ message: "Cannot associate OTP with a user/phone" });
     }
 
+    console.log(`[OTP] Generating for ${otpKey}...`);
     await Otp.deleteMany({ phone: otpKey });
-    await Otp.create({ phone: otpKey, otp }); // Saving to DB
+    await Otp.create({ phone: otpKey, otp });
+    console.log(`[OTP] Saved to DB: ${otp}`);
 
-    console.log(`OTP for ${otpKey} (${type}): ${otp}`);
+    console.log(`[OTP] Email Config: User=${process.env.EMAIL_USER ? "YES" : "NO"}, Pass=${process.env.EMAIL_PASS ? "YES" : "NO"}`);
 
-    // SEND EMAIl IF AVAILABLE
+    // SEND EMAIL IF AVAILABLE
     if (targetEmail && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      console.log(`[OTP] Attempting to send email to ${targetEmail}...`);
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: targetEmail,
@@ -180,7 +213,7 @@ router.post("/send-otp", async (req, res) => {
                 ${otp}
               </h1>
               <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
-                This code is valid for 5 minutes. Do not share it with anyone.
+                This code is valid for 60 seconds. Do not share it with anyone.
               </p>
             </div>
             <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #9ca3af;">
@@ -190,22 +223,27 @@ router.post("/send-otp", async (req, res) => {
         `,
       };
 
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.log("Error sending email:", error);
-          // Don't fail the request, just log. Client might see mock OTP in dev.
-        } else {
-          console.log("Email sent: " + info.response);
-        }
-      });
-
-      return res.json({ success: true, message: `OTP sent to ${targetEmail}`, otp }); // Return OTP for dev convenience still?
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent successfully to ${targetEmail}`);
+        return res.json({ success: true, message: `OTP sent to ${targetEmail}`, otp });
+      } catch (emailError) {
+        console.error("❌ Error sending email:", emailError.message);
+        // Fallback: Still return success but log error so user can find OTP in console
+        return res.json({
+          success: true,
+          message: "OTP generated (Email failed, check server console)",
+          otp,
+          emailError: emailError.message
+        });
+      }
     }
 
+    console.log(`[OTP] No email configuration found, returning mock response.`);
     res.json({ success: true, message: "OTP sent (Mocked - check console)", otp });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("[OTP] FATAL ERROR:", err);
+    res.status(500).json({ message: `Server error: ${err.message}` });
   }
 });
 
@@ -221,7 +259,8 @@ router.post("/verify-otp-reset", async (req, res) => {
     // Resolve Phone if Email provided
     let targetPhone = phone;
     if (!targetPhone && email) {
-      const user = await User.findOne({ email });
+      const normalizedEmail = email.trim().toLowerCase();
+      const user = await User.findOne({ email: normalizedEmail });
       if (user) targetPhone = user.phone;
     }
 
@@ -331,29 +370,40 @@ router.post("/register", async (req, res) => {
 /* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
   let { identifier, password, role } = req.body;
+  if (identifier && identifier.includes("@")) {
+    identifier = identifier.trim().toLowerCase();
+  }
 
   try {
-    identifier = identifier.trim().replace(/\s|-/g, "");
+    const dbName = mongoose.connection.name;
+    console.log(`[Login Debug] DB: ${dbName}, Identifier: "${identifier}", Role: "${role}"`);
 
     const user = await User.findOne({
       $or: [{ email: identifier }, { phone: identifier }],
     });
 
     if (!user) {
+      const allUsers = await User.find({}, { email: 1, _id: 0 });
+      console.log(`[Login] User NOT found for ${identifier}. Registered emails:`, allUsers.map(u => u.email).join(", "));
       return res.status(400).json({ message: "User not found with this email/mobile" });
     }
 
+    console.log(`[Login] User found: ${user.email}, Role: ${user.role}, HasPassword: ${!!user.password}`);
+
     // If user has no password (e.g. google/otp only user)
     if (!user.password) {
+      console.log(`[Login] User has no password set`);
       return res.status(400).json({ message: "Please login with Google or OTP" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      console.log(`[Login] Password mismatch for ${user.email}`);
       return res.status(400).json({ message: "Invalid password" });
     }
 
     if (user.role !== role) {
+      console.log(`[Login] Role mismatch: User is ${user.role}, attempted login as ${role}`);
       return res.status(403).json({
         message:
           user.role === "admin"
@@ -361,6 +411,8 @@ router.post("/login", async (req, res) => {
             : "User cannot login as admin",
       });
     }
+
+    console.log(`[Login] Successful login for ${user.email}`);
 
     const token = jwt.sign(
       { id: user._id, role: user.role },

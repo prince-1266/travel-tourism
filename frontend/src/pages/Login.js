@@ -256,7 +256,7 @@ const Login = () => {
                   console.log('Login Failed');
                   notifyError("Google Login Failed");
                 }}
-                useOneTap
+                useOneTap={false}
                 shape="circle"
               />
             </div>

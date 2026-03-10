@@ -25,7 +25,7 @@ const Footer = () => {
                             <a href="https://wa.me/916353248918" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-gray-800/50 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(16,185,129,0.4)] border border-gray-700/50">
                                 <Phone size={18} />
                             </a>
-                            <a href="mailto:modhprince099@gmail.com" className="w-11 h-11 rounded-full bg-gray-800/50 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(239,68,68,0.4)] border border-gray-700/50">
+                            <a href="mailto:tripwell.support@gmail.com" className="w-11 h-11 rounded-full bg-gray-800/50 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(239,68,68,0.4)] border border-gray-700/50">
                                 <Mail size={18} />
                             </a>
                         </div>
@@ -56,7 +56,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-800/30 transition-colors border border-transparent hover:border-gray-800">
                                 <Mail className="text-blue-500 shrink-0" size={20} />
-                                <span className="text-sm font-medium">modhprince099@gmail.com</span>
+                                <span className="text-sm font-medium">tripwell.support@gmail.com</span>
                             </li>
                         </ul>
                     </div>

@@ -7,6 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import api from "../api/axios";
 import { PhoneNumberUtil } from "google-libphonenumber";
 
 export default function Register() {
@@ -420,7 +421,7 @@ export default function Register() {
                   console.log('Login Failed');
                   notifyError("Google Login Failed");
                 }}
-                useOneTap
+                useOneTap={false}
                 shape="circle"
               />
             </div>

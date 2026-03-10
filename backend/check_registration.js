@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function testRegistration() {
     try {
-        const response = await axios.post('http://localhost:5000/api/auth/register', {
+        const response = await axios.post('http://localhost:5001/api/auth/register', {
             name: 'Test User',
             email: 'invalid-email', // user said this registers successfully
             phone: '1234567890',
