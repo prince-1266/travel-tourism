@@ -80,10 +80,6 @@ export default function MyBookings() {
           animate={{ opacity: 1, x: 0 }}
           className="text-left mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-indigo-200 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-            <Plane size={12} className="text-yellow-400" />
-            Travel Log
-          </div>
           <h1 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight drop-shadow-2xl leading-none flex items-center gap-3">
             My Bookings <span className="text-blue-400 animate-pulse">✈️</span>
           </h1>

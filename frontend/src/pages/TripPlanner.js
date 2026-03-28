@@ -46,7 +46,17 @@ export default function TripPlanner() {
     return true;
   };
 
-  const handlePaymentComplete = async (paymentDetails) => {
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePaymentComplete = async () => {
     setIsProcessing(true);
     try {
       // 1. Calculate Totals
@@ -54,9 +64,9 @@ export default function TripPlanner() {
       const flightCost = (tripData.selectedFlight?.price || 0) * tripData.travelers;
       const hotelCost = (tripData.selectedHotel?.price || 0) * days;
       const tax = (flightCost + hotelCost) * 0.18;
-      const totalPrice = flightCost + hotelCost + tax;
+      const totalPrice = Math.round(flightCost + hotelCost + tax);
 
-      // 2. Create Booking
+      // 2. Create Booking First
       const bookingRes = await api.post("/bookings", {
         destination: tripData.destinationName,
         flight: tripData.selectedFlight,
@@ -65,32 +75,86 @@ export default function TripPlanner() {
         endDate: tripData.endDate,
         travelers: tripData.travelers,
         travelersDetails: tripData.travelersDetails,
-        totalPrice: Math.round(totalPrice),
+        totalPrice: totalPrice,
       });
 
       const bookingId = bookingRes.data._id;
 
-      // 3. Process Payment
-      await api.post("/payments", {
-        bookingId,
-        amount: Math.round(totalPrice),
-        method: paymentDetails.method,
-        cardDetails: paymentDetails.cardDetails
+      // 3. Load Razorpay
+      const res = await loadRazorpayScript();
+      if (!res) {
+        notifyError("Razorpay SDK failed to load. Are you online?");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 4. Create Order
+      const orderResponse = await api.post("/payments/create-order", {
+        amount: totalPrice,
       });
 
-      // 4. Success
-      setIsSuccess(true);
-      notifySuccess("Trip Booked Successfully!");
+      if (!orderResponse || !orderResponse.data) {
+        notifyError("Server error configuring payment.");
+        setIsProcessing(false);
+        return;
+      }
 
-      setTimeout(() => {
-        navigate("/app/mybookings");
-      }, 3000);
+      const orderData = orderResponse.data;
+
+      // 5. Open Razorpay Checkot
+      const options = {
+        key: "rzp_test_SWh8pIsFJtmUlJ",
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "TravelFlow Planner",
+        description: "Custom Trip Booking Payment",
+        order_id: orderData.id,
+        handler: async function (response) {
+          try {
+            // 6. Verify Payment
+            const verifyRes = await api.post("/payments/verify", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              bookingId: bookingId,
+              amount: totalPrice,
+            });
+
+            if (verifyRes.data.success) {
+              setIsSuccess(true);
+              notifySuccess("Trip Booked Successfully!");
+              setTimeout(() => {
+                navigate("/app/mybookings");
+              }, 3000);
+            } else {
+              notifyError("Payment verification failed.");
+            }
+          } catch (err) {
+            notifyError("Verification failed on server.");
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: tripData.travelersDetails[0]?.name || "Traveler",
+        },
+        theme: {
+          color: "#4f46e5",
+        },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
 
     } catch (err) {
       console.error(err);
       const errorMessage = err.response?.data?.message || err.message || "Booking Failed! Please try again.";
       notifyError(errorMessage);
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -111,24 +175,6 @@ export default function TripPlanner() {
           </div>
         ) : (
           <>
-            {/* PROGRESS BAR */}
-            <div className="mb-12">
-              <div className="hidden md:flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-white/60 mb-4 px-2">
-                <span>01 Strategy</span>
-                <span>02 Manifest</span>
-                <span>03 Logistics</span>
-                <span>04 Habitat</span>
-                <span>05 Audit</span>
-                <span>06 Confirm</span>
-              </div>
-              <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-xl border border-white/10">
-                <div
-                  className="h-full bg-indigo-500 transition-all duration-700 ease-out shadow-[0_0_20px_rgba(99,102,241,0.5)]"
-                  style={{ width: `${(currentStep / 6) * 100}%` }}
-                />
-              </div>
-            </div>
-
             <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-[0_40px_80px_-15px_rgba(0,0,0,0.3)] border border-gray-100 flex flex-col min-h-[60vh] relative overflow-hidden">
               {/* CONTENT AREA (Scrollable internal) */}
               <div className={`overflow-y-auto custom-scrollbar flex-1 pr-2 ${currentStep === 6 ? 'flex items-center justify-center' : ''}`}>

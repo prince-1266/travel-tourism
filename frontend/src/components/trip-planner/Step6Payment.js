@@ -1,74 +1,40 @@
-import { CreditCard } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export default function Step6Payment({ onPaymentComplete, processing }) {
-
     const handlePayment = () => {
-        // Pass fake card details or collected state
-        onPaymentComplete({
-            method: "Card",
-            cardDetails: { number: "4242", name: "John Doe" }
-        });
+        onPaymentComplete();
     };
 
-
-
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Payment Method</h2>
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 w-full max-w-md mx-auto">
+            <h2 className="text-3xl font-black text-indigo-950 uppercase tracking-tighter text-center mb-8">Secure Checkout</h2>
 
-            <div className="bg-white dark:bg-white/10 p-6 rounded-2xl border border-gray-100 dark:border-white/10 mb-6">
-                <div className="flex gap-4 mb-6">
-                    <div className="flex-1 bg-indigo-600 p-4 rounded-xl border-2 border-white/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-2 opacity-20"><CreditCard size={100} /></div>
-                        <p className="text-xs text-white/70 mb-8">Credit / Debit Card</p>
-                        <p className="font-mono text-xl text-white mb-2">**** **** **** 4242</p>
-                        <div className="flex justify-between text-xs text-white/70">
-                            <span>Expires 12/25</span>
-                            <span>John Doe</span>
-                        </div>
-                    </div>
+            <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] mb-6 text-center">
+                <div className="bg-emerald-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100">
+                     <ShieldCheck size={40} className="text-emerald-500" />
                 </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Finalize Your Journey</h3>
+                <p className="text-sm text-gray-500 mb-8 px-4 leading-relaxed">
+                    You will be securely redirected to the Razorpay payment gateway to complete your transaction via Card, UPI, or NetBanking.
+                </p>
 
-                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handlePayment(); }}>
-                    <div>
-                        <label className="text-xs text-gray-500 dark:text-white/60 block mb-1">Card Number</label>
-                        <input
-                            type="text"
-                            placeholder="0000 0000 0000 0000"
-                            className="w-full p-3 rounded-xl bg-white/90 dark:bg-slate-700/70 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 outline-none border-none transition"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs text-gray-500 dark:text-white/60 block mb-1">Expiry Date</label>
-                            <input
-                                type="text"
-                                placeholder="MM/YY"
-                                className="w-full p-3 rounded-xl bg-white/90 dark:bg-slate-700/70 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 outline-none border-none transition"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-gray-500 dark:text-white/60 block mb-1">CVV</label>
-                            <input
-                                type="password"
-                                placeholder="123"
-                                className="w-full p-3 rounded-xl bg-white/90 dark:bg-slate-700/70 text-black dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 outline-none border-none transition"
-                            />
-                        </div>
-                    </div>
+                <button
+                    onClick={handlePayment}
+                    disabled={processing}
+                    className="w-full py-5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-[0_10px_30px_-10px_rgba(79,70,229,0.8)] border border-indigo-400/30 transition-all disabled:opacity-50 flex items-center justify-center gap-3 disabled:cursor-not-allowed"
+                >
+                    {processing ? (
+                        <>Initializing Gateway <span className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin block"></span></>
+                    ) : (
+                        <>Pay Securely Now</>
+                    )}
+                </button>
 
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="w-full py-4 mt-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-xl shadow-lg shadow-yellow-500/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                        {processing ? (
-                            <>Processing <span className="animate-spin">⌛</span></>
-                        ) : (
-                            <>Pay Securely <CreditCard size={18} /></>
-                        )}
-                    </button>
-                </form>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-6 flex items-center justify-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse block"></span>
+                    Encrypted Connection
+                </p>
             </div>
         </div>
     );
