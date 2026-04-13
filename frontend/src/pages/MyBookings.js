@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, CheckCircle, Trash2, Info, Plane, Sparkles } from "lucide-react";
+import { MapPin, Trash2 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import ConfirmModal from "../components/ui/ConfirmModal";
 

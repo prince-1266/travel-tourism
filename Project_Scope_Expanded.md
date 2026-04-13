@@ -1,0 +1,20 @@
+# 2.1 Scope of the Project
+The “Travel and Tourism Management System” is designed to provide an effective, web-based solution for travelers to search, plan, and book flights and trips by centralizing the travel planning lifecycle using modern web technologies. The system enables users to intuitively explore interactive destination galleries, find simulated availability of flights, and proceed to booking via a seamless interface. This allows tourists to organize their trips digitally through an integrated platform. In contrast, the administrative side provides a secure dashboard allowing staff to manage user data, oversee bookings, and update available flights utilizing a secure cloud-based database architecture.
+
+The system further integrates an automated AI Chatbot, making guidance and platform navigation understandable and immediate for users. Real-time processing is supported for backend database queries to ensure smooth and continuous interaction during booking without delay. A user-friendly interface is provided, which includes modules such as a landing page, authentication pages (login, registration with OTP verification), and separate environments for standard travelers and administrators. The system is designed to work using standard hardware such as internet-enabled computers or mobile devices with web browsers, ensuring that no expensive or specialized devices are required, making it accessible and cost-effective.
+
+Currently, the system supports a simulated environment for flight bookings, generating invoices and recording the transaction state, but it does not include execution of real-world financial bank deductions or live synchronization with Global Distribution Systems (GDS). The scope is therefore limited to the mock booking lifecycle at this stage. However, a scalable and flexible system structure is established (MERN stack), allowing future enhancements such as the integration of live payment gateways (e.g., Stripe or PayPal), improvement in fetching real-time global airline APIs, integration of advanced AI models for custom itinerary generation, and deployment on native mobile platforms to increase usability and provide a more efficient booking experience.
+
+Furthermore, the system is intended to enhance digital tourism inclusivity by providing a platform where independent trip planning can be achieved without reliance on human travel agents. The solution is suitable for use in various real-world scenarios such as personal vacations, corporate travel setups, and daily trip planning where fragmented tourism services create barriers. Emphasis is placed on maintaining simplicity and ease of use so that individuals with minimal technical knowledge can operate the system effectively. The architecture is designed in a way that future integration with advanced computing technologies, mobile applications, and third-party cloud services can be achieved seamlessly. Continuous improvements in terms of data search accuracy, processing speed, and support for a broader range of global travel capabilities are expected, which will further enhance the performance and usability of the system in future developments.
+
+# 2.2 Features of the System
+
+• User authentication with login, registration, and secure email-based OTP verification
+• Separate access environments providing dedicated dashboard views for standard users and administrators
+• Comprehensive flight search functionality based on origin, destination, and travel dates
+• Booking engine that maps selected flights and passenger details to generate booking confirmations
+• Interactive destination galleries categorizing locations dynamically (e.g., nature, historical, cityscapes)
+• Integrated AI chatbot to provide real-time assistance and respond to user queries on the platform
+• Administrative dashboard to monitor user activity, manage flight schedules, and oversee system records
+• Real-time database management utilizing MongoDB for seamless synchronization of bookings and user states
+• Responsive, user-friendly interface designed for use across varying screen sizes and devices
