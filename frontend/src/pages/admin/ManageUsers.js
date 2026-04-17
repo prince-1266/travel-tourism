@@ -1,10 +1,8 @@
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTheme } from "../../context/ThemeContext";
 
 export default function ManageUsers() {
-  const { theme } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 

@@ -1,10 +1,8 @@
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTheme } from "../../context/ThemeContext";
 
 export default function ManageBookings() {
-  const { theme } = useTheme();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 

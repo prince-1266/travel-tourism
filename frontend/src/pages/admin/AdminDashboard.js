@@ -1,14 +1,12 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Users, BookOpen, Plane, LogOut } from "lucide-react";
+import { Users, BookOpen, Plane } from "lucide-react";
 
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
-import { useTheme } from "../../context/ThemeContext";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
   const [stats, setStats] = useState({ users: 0, bookings: 0, revenue: 0, flights: 0 });
   const [recentBookings, setRecentBookings] = useState([]);
   const [recentUsers, setRecentUsers] = useState([]);
