@@ -1,147 +1,317 @@
+import Groq from "groq-sdk";
 
-/* 
-  MOCK AI CONTROLLER 
-  - Simulates LLM responses for reliability & demo purposes.
-  - Can be replaced with actual OpenAI/Gemini calls.
-*/
+/* ─────────────────────────────────────────────
+   GROQ AI CONTROLLER
+   Real AI-powered travel assistant using Groq (Llama).
+   Free tier: 30 req/min, 14,400 req/day.
+   ───────────────────────────────────────────── */
 
-// Helper: Delay to simulate AI "thinking"
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-export const generateTripPlan = async (req, res) => {
-    const { destination, days, budget, type } = req.body;
+// Model: Llama 3.3 70B — excellent quality, fast via Groq
+const MODEL = "llama-3.3-70b-versatile";
 
-    await delay(1500); // Simulate network/processing
+// ─── System prompt for the travel chatbot ───
+const TRAVEL_SYSTEM_PROMPT = `You are TripWell AI, the official virtual assistant for the TripWell travel platform. Your role is strictly restricted to helping users with the specific destinations, features, booking steps, pricing, payments, and troubleshooting steps related ONLY to this platform.
 
-    // Generic Templates
-    const activities = {
-        Beach: ["Relax at the beach", "Water sports", "Sunset cruise", "Seafood dinner"],
-        Mountain: ["Hiking/Trekking", "Visit view points", "Bonfire night", "Local market"],
-        City: ["City tour", "Museum visit", "Shopping", "Fine dining"],
-        Spiritual: ["Temple visit", "Morning prayers", "Meditation", "Vegetarian meal"],
-        Adventure: ["Bungee jumping", "Rafting", "Camping", "Climbing"]
-    };
+### RESTRICTED DESTINATIONS (Gujarat Only)
+You must ONLY discuss, recommend, or plan trips for the following six destinations added to the TripWell project. Do NOT under any circumstances recommend or provide details/itineraries for other places (such as Goa, Delhi, Mumbai, Paris, Switzerland, etc.). If a user asks about another place, politely but firmly state that TripWell exclusively focuses on these six premium Gujarat destinations:
+1. **Statue of Unity** (Location: Gujarat | Starting Price: ₹5,999 | Rating: 4.8 | World’s tallest statue on the Narmada river)
+2. **Rann of Kutch** (Location: Kutch | Starting Price: ₹6,999 | Rating: 4.9 | White salt desert and home of the spectacular Rann Utsav)
+3. **Gir National Park** (Location: Junagadh | Starting Price: ₹7,999 | Rating: 4.7 | The exclusive home of majestic Asiatic lions)
+4. **Somnath Temple** (Location: Veraval | Starting Price: ₹4,999 | Rating: 4.9 | Highly sacred coastal Jyotirlinga temple)
+5. **Dwarka** (Location: Dwarka | Starting Price: ₹4,999 | Rating: 4.8 | Ancient coastal kingdom of Lord Krishna)
+6. **Saputara** (Location: Dang | Starting Price: ₹5,499 | Rating: 4.6 | Beautiful and refreshing hill station of Gujarat)
 
-    // Determine type based on destination keyword if type not provided
-    let selectedType = type || "City";
-    const desc = destination.toLowerCase();
+### PLATFORM BOOKING STEPS
+Guide users on how to complete a booking on TripWell:
+1. **Explore & Plan**: Browse destinations on the Dashboard, input your details (dates, starting city, number of people) in the Trip Planner, and generate your customized itinerary.
+2. **Step 1 (Flights)**: Choose your preferred flight from your starting city to the destination.
+3. **Step 2 & 3 (Hotels)**: Choose a hotel from the list and view hotel details.
+4. **Step 4 (Traveler Details)**: Enter the traveler details (Name, Age, Gender, Passport/Govt ID) for each traveler.
+5. **Step 5 (Payment)**: Pay securely via the integrated Razorpay Gateway to confirm the booking.
 
-    if (desc.includes("goa") || desc.includes("maldives") || desc.includes("puri")) selectedType = "Beach";
-    else if (desc.includes("manali") || desc.includes("shimla") || desc.includes("leh")) selectedType = "Mountain";
-    else if (desc.includes("rishikesh")) selectedType = "Adventure";
-    else if (desc.includes("kedarnath") || desc.includes("temp")) selectedType = "Spiritual";
+### PRICING FORMULA
+Explain clearly how our booking prices are calculated:
+* Total Price = (Flight Price per Person * Number of Persons) + (Hotel Price per Night * Number of Days) + ₹500 (Taxes & Processing Fees).
 
-    const acts = activities[selectedType] || activities["City"];
-    const plan = [];
+### PAYMENTS
+* All payments are processed securely via the integrated Razorpay Payment Gateway.
+* During checkout, your prefilled name and email will be passed to the payment gateway.
+* You can complete your mock payment using Razorpay's test modal.
 
-    for (let i = 1; i <= days; i++) {
-        plan.push({
-            day: i,
-            title: `Day ${i}: ${selectedType} Exploration`,
-            activities: [
-                `Morning: ${acts[0]}`,
-                `Afternoon: ${acts[1]}`,
-                `Evening: ${acts[2]}`,
-            ],
+### TROUBLESHOOTING & COMMON ISSUES
+* **Flights not loading/showing**: Make sure you have entered a starting city in the Trip Planner.
+* **Payment loading or SDK failure**: Check your internet connection and ensure the Razorpay checkout script has loaded.
+* **Booking not visible**: After successful payment, your confirmed booking instantly updates and is visible on your "My Bookings" page and user Dashboard.
+* **"Trouble connecting" or "Not configured"**: This occurs if the GROQ_API_KEY is not defined in the backend server's .env file. The system administrator needs to add a valid Groq API key and restart the server.
+
+### GENERAL RULES
+- Keep responses warm, enthusiastic, concise, and structured with clear headings or bullet points.
+- If asked about non-travel topics or destinations outside Gujarat, politely bring the conversation back to the 6 TripWell destinations.`;
+
+// ─────────────────────────────────────────────
+// 1. CHAT WITH AI (main chatbot)
+// ─────────────────────────────────────────────
+export const chatWithAI = async (req, res) => {
+    const { message, history } = req.body;
+
+    if (!message || typeof message !== "string" || !message.trim()) {
+        return res.status(400).json({
+            success: false,
+            error: "Message is required",
         });
     }
 
-    res.status(200).json({
-        success: true,
-        data: {
-            destination,
-            days,
-            type: selectedType,
-            itinerary: plan,
-            note: "Generated by AI Planner"
+    try {
+        // Build conversation history for multi-turn context
+        const messages = [
+            { role: "system", content: TRAVEL_SYSTEM_PROMPT },
+        ];
+
+        if (Array.isArray(history)) {
+            for (const msg of history) {
+                if (msg.role === "user" && msg.text) {
+                    messages.push({ role: "user", content: msg.text });
+                } else if (msg.role === "assistant" && msg.text) {
+                    messages.push({ role: "assistant", content: msg.text });
+                }
+            }
         }
-    });
+
+        // Add current message
+        messages.push({ role: "user", content: message });
+
+        const completion = await groq.chat.completions.create({
+            model: MODEL,
+            messages,
+            max_tokens: 1024,
+            temperature: 0.8,
+        });
+
+        const response = completion.choices[0]?.message?.content || "I couldn't generate a response. Please try again!";
+
+        res.status(200).json({
+            success: true,
+            data: { response },
+        });
+    } catch (err) {
+        console.error("AI Chat Error:", err.message);
+
+        if (err.message?.includes("API") || err.message?.includes("auth")) {
+            return res.status(500).json({
+                success: false,
+                data: {
+                    response:
+                        "The AI service is not configured yet. Please add a valid GROQ_API_KEY to the server's .env file.",
+                },
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            data: {
+                response:
+                    "I'm having trouble connecting right now. Please try again in a moment! 🔄",
+            },
+        });
+    }
 };
 
+// ─────────────────────────────────────────────
+// 2. GENERATE TRIP PLAN
+// ─────────────────────────────────────────────
+export const generateTripPlan = async (req, res) => {
+    const { destination, days, budget, type } = req.body;
+
+    if (!destination || !days) {
+        return res.status(400).json({
+            success: false,
+            error: "Destination and number of days are required",
+        });
+    }
+
+    try {
+        const prompt = `Create a detailed ${days}-day trip itinerary for ${destination}.
+${budget ? `Budget: ${budget}` : ""}
+${type ? `Trip type: ${type}` : ""}
+
+Respond in this exact JSON format (no markdown, no code fences, just raw JSON):
+{
+  "destination": "${destination}",
+  "days": ${days},
+  "type": "${type || "General"}",
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Day 1: [theme]",
+      "activities": ["Morning: ...", "Afternoon: ...", "Evening: ..."]
+    }
+  ],
+  "tips": ["tip1", "tip2"],
+  "estimatedBudget": "₹X,XXX - ₹X,XXX per person"
+}`;
+
+        const completion = await groq.chat.completions.create({
+            model: MODEL,
+            messages: [
+                { role: "system", content: "You are a travel planning expert. Return ONLY valid JSON, no markdown formatting or code fences." },
+                { role: "user", content: prompt },
+            ],
+            max_tokens: 2048,
+            temperature: 0.7,
+        });
+
+        const text = (completion.choices[0]?.message?.content || "").trim();
+
+        let data;
+        try {
+            const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+            data = JSON.parse(cleaned);
+        } catch {
+            data = {
+                destination,
+                days,
+                type: type || "General",
+                itinerary: [{ day: 1, title: "Your Trip Plan", activities: [text] }],
+                note: "Generated by TripWell AI",
+            };
+        }
+
+        res.status(200).json({ success: true, data });
+    } catch (err) {
+        console.error("Trip Plan Error:", err.message);
+        res.status(500).json({
+            success: false,
+            error: "Failed to generate trip plan. Please try again.",
+        });
+    }
+};
+
+// ─────────────────────────────────────────────
+// 3. WEATHER SUMMARY
+// ─────────────────────────────────────────────
 export const getWeatherSummary = async (req, res) => {
     const { location } = req.query;
 
-    await delay(1000);
-
-    // Mock Logic
-    const month = new Date().getMonth();
-    let weather = "Sunny & Pleasant";
-    let temp = "25°C";
-
-    const loc = location?.toLowerCase() || "";
-
-    if (loc.includes("manali") || loc.includes("leh")) {
-        if (month > 2 && month < 9) { weather = "Cool & Breezy"; temp = "15°C"; }
-        else { weather = "Snowy & Cold"; temp = "-2°C"; }
-    } else if (loc.includes("goa") || loc.includes("mumbai")) {
-        if (month > 5 && month < 9) { weather = "Rainy (Monsoon)"; temp = "28°C"; }
-        else { weather = "Sunny & Humid"; temp = "32°C"; }
-    } else if (loc.includes("rajasthan") || loc.includes("jaipur")) {
-        weather = "Hot & Sunny"; temp = "38°C";
+    if (!location) {
+        return res.status(400).json({
+            success: false,
+            error: "Location is required",
+        });
     }
 
-    const summary = `During your trip to ${location || "your destination"}, expect ${weather} (${temp}). Pack accordingly!`;
+    try {
+        const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
 
-    res.status(200).json({
-        success: true,
-        data: {
-            summary,
-            temperature: temp,
-            condition: weather
+        const prompt = `For a traveler planning to visit ${location} in ${currentMonth}:
+
+1. What is the typical weather like?
+2. What temperature range should they expect?
+3. Any weather-related travel tips?
+
+Respond in this exact JSON format (no markdown, no code fences, just raw JSON):
+{
+  "summary": "one paragraph travel weather summary",
+  "temperature": "XX°C - XX°C",
+  "condition": "e.g. Sunny & Pleasant"
+}`;
+
+        const completion = await groq.chat.completions.create({
+            model: MODEL,
+            messages: [
+                { role: "system", content: "You are a travel weather advisor. Return ONLY valid JSON, no markdown formatting or code fences." },
+                { role: "user", content: prompt },
+            ],
+            max_tokens: 512,
+            temperature: 0.5,
+        });
+
+        const text = (completion.choices[0]?.message?.content || "").trim();
+
+        let data;
+        try {
+            const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+            data = JSON.parse(cleaned);
+        } catch {
+            data = {
+                summary: text,
+                temperature: "N/A",
+                condition: "Check local forecast",
+            };
         }
-    });
+
+        res.status(200).json({ success: true, data });
+    } catch (err) {
+        console.error("Weather Summary Error:", err.message);
+        res.status(500).json({
+            success: false,
+            error: "Failed to get weather summary.",
+        });
+    }
 };
 
+// ─────────────────────────────────────────────
+// 4. PACKING SUGGESTIONS
+// ─────────────────────────────────────────────
 export const getPackingSuggestions = async (req, res) => {
     const { destination, days, type } = req.body;
 
-    await delay(1200);
-
-    const loc = destination?.toLowerCase() || "";
-    const essentials = ["ID Proofs", "Phone Charger", "First Aid Kit", "Cash/Cards"];
-    let clothes = ["T-shirts", "Jeans", "Comfortable Shoes"];
-    let specific = [];
-
-    if (loc.includes("manali") || loc.includes("snow") || type === "Mountain") {
-        clothes = ["Thermals", "Heavy Jacket", "Woolen Socks", "Gloves"];
-        specific = ["Snow Boots", "Moisturizer", "Sunglasses"];
-    } else if (loc.includes("goa") || type === "Beach") {
-        clothes = ["Shorts", "Swimwear", "Cotton Shirts", "Sandals"];
-        specific = ["Sunscreen", "Hat/Cap", "Beach Towel"];
-    } else if (type === "Adventure") {
-        clothes = ["Track pants", "Dri-fit tees", "Trekking Shoes"];
-        specific = ["Torch", "Power bank", "Bug spray"];
+    if (!destination) {
+        return res.status(400).json({
+            success: false,
+            error: "Destination is required",
+        });
     }
 
-    res.status(200).json({
-        success: true,
-        data: {
-            categories: {
-                Essentials: essentials,
-                Clothing: clothes,
-                "Weather Specific": specific
-            }
+    try {
+        const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
+
+        const prompt = `Create a packing list for a ${days || 3}-day ${type || "general"} trip to ${destination} in ${currentMonth}.
+
+Respond in this exact JSON format (no markdown, no code fences, just raw JSON):
+{
+  "categories": {
+    "Essentials": ["item1", "item2"],
+    "Clothing": ["item1", "item2"],
+    "Weather Specific": ["item1", "item2"],
+    "Toiletries & Health": ["item1", "item2"],
+    "Tech & Entertainment": ["item1", "item2"]
+  }
+}`;
+
+        const completion = await groq.chat.completions.create({
+            model: MODEL,
+            messages: [
+                { role: "system", content: "You are a travel packing expert. Return ONLY valid JSON, no markdown formatting or code fences." },
+                { role: "user", content: prompt },
+            ],
+            max_tokens: 1024,
+            temperature: 0.6,
+        });
+
+        const text = (completion.choices[0]?.message?.content || "").trim();
+
+        let data;
+        try {
+            const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+            data = JSON.parse(cleaned);
+        } catch {
+            data = {
+                categories: {
+                    Essentials: ["ID Proofs", "Phone Charger", "First Aid Kit", "Cash/Cards"],
+                    Clothing: ["Comfortable clothes for the weather"],
+                    "Weather Specific": [text],
+                },
+            };
         }
-    });
-};
 
-export const chatWithAI = async (req, res) => {
-    const { message } = req.body;
-
-    await delay(1500);
-
-    let response = "That's a great question! For detailed travel advice, I recommend checking our destination guides.";
-    const msg = message?.toLowerCase() || "";
-
-    if (msg.includes("pack")) response = "Packing depends on where you go! For beaches, pack light cottons. For mountains, bring layers and a good jacket.";
-    else if (msg.includes("time") || msg.includes("when")) response = "Generally, October to March is the best time for most Indian destinations due to pleasant weather.";
-    else if (msg.includes("budget") || msg.includes("cheap")) response = "For budget trips, consider places like Rishikesh, Pondicherry, or Gokarna depending on your location.";
-    else if (msg.includes("hello") || msg.includes("hi")) response = "Hello! I am your AI Travel Assistant. How can I help you plan your next adventure?";
-
-    res.status(200).json({
-        success: true,
-        data: {
-            response
-        }
-    });
+        res.status(200).json({ success: true, data });
+    } catch (err) {
+        console.error("Packing Suggestions Error:", err.message);
+        res.status(500).json({
+            success: false,
+            error: "Failed to generate packing suggestions.",
+        });
+    }
 };

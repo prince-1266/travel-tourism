@@ -3,7 +3,6 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import { Outlet } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import Chatbot from './ui/Chatbot';
 
 const Layout = () => {
     const { theme } = useTheme();
@@ -27,7 +26,6 @@ const Layout = () => {
                 </main>
                 <Footer />
             </div>
-            <Chatbot />
         </div>
     );
 };
