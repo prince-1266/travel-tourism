@@ -81,7 +81,11 @@ export default function Settings() {
         type: "reset",
         email: user.email
       });
-      success(res.data.message || "OTP sent to your email.");
+      if (res.data.otp) {
+        success(`OTP: ${res.data.otp} (Sent to email)`);
+      } else {
+        success(res.data.message || "OTP sent to your email.");
+      }
       setOtpStep("verify");
       setOtpData({ ...otpData, otp: ["", "", "", "", "", ""] }); // Reset OTP boxes
       setTimeLeft(60); // Start 60s countdown
