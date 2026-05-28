@@ -106,7 +106,7 @@ export default function TripWell() {
         key: "rzp_test_SWh8pIsFJtmUlJ",
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "TravelFlow Planner",
+        name: "TripWell Booking",
         description: "Custom Trip Booking Payment",
         order_id: orderData.id,
         handler: async function (response) {

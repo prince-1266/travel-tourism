@@ -41,7 +41,6 @@ app.use("/api/location", locationRoutes);
 app.use("/api/places", placesRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/trips", tripRoutes);
-app.use("/api/trips", tripRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/weather", weatherRoutes);

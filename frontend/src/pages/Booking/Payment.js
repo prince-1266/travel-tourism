@@ -50,7 +50,7 @@ export default function Payment({ trip, bookingId, onSuccess, onBack }) {
         key: "rzp_test_SWh8pIsFJtmUlJ", // Your Test Key ID
         amount: orderData.amount,
         currency: orderData.currency,
-        name: "TravelFlow Checkout",
+        name: "TripWell Checkout",
         description: "Trip Booking Payment",
         order_id: orderData.id,
         handler: async function (response) {
