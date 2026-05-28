@@ -1,4 +1,6 @@
 import Groq from "groq-sdk";
+import Booking from "../models/Booking.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /* ─────────────────────────────────────────────
    GROQ AI CONTROLLER
@@ -255,58 +257,213 @@ Respond in this exact JSON format (no markdown, no code fences, just raw JSON):
 // 4. PACKING SUGGESTIONS
 // ─────────────────────────────────────────────
 export const getPackingSuggestions = async (req, res) => {
-    const { destination, days, type } = req.body;
-
-    if (!destination) {
-        return res.status(400).json({
-            success: false,
-            error: "Destination is required",
-        });
-    }
-
     try {
-        const currentMonth = new Date().toLocaleString("en-US", { month: "long" });
+        const { bookingId, regenerate } = req.body;
 
-        const prompt = `Create a packing list for a ${days || 3}-day ${type || "general"} trip to ${destination} in ${currentMonth}.
-
-Respond in this exact JSON format (no markdown, no code fences, just raw JSON):
-{
-  "categories": {
-    "Essentials": ["item1", "item2"],
-    "Clothing": ["item1", "item2"],
-    "Weather Specific": ["item1", "item2"],
-    "Toiletries & Health": ["item1", "item2"],
-    "Tech & Entertainment": ["item1", "item2"]
-  }
-}`;
-
-        const completion = await groq.chat.completions.create({
-            model: MODEL,
-            messages: [
-                { role: "system", content: "You are a travel packing expert. Return ONLY valid JSON, no markdown formatting or code fences." },
-                { role: "user", content: prompt },
-            ],
-            max_tokens: 1024,
-            temperature: 0.6,
-        });
-
-        const text = (completion.choices[0]?.message?.content || "").trim();
-
-        let data;
-        try {
-            const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-            data = JSON.parse(cleaned);
-        } catch {
-            data = {
-                categories: {
-                    Essentials: ["ID Proofs", "Phone Charger", "First Aid Kit", "Cash/Cards"],
-                    Clothing: ["Comfortable clothes for the weather"],
-                    "Weather Specific": [text],
-                },
-            };
+        if (!bookingId) {
+            return res.status(400).json({ success: false, error: "Booking ID is required." });
         }
 
-        res.status(200).json({ success: true, data });
+        const booking = await Booking.findOne({ _id: bookingId, user: req.user.id });
+        if (!booking) {
+            return res.status(404).json({ success: false, error: "Booking not found." });
+        }
+
+        // Enforce the confirmed status rule
+        if (booking.status !== "confirmed" && booking.status !== "completed") {
+            return res.status(400).json({
+                success: false,
+                error: "Packing suggestions are only available for confirmed bookings. Please confirm your booking first."
+            });
+        }
+
+        // Return existing list if not regenerating
+        if (booking.packingList && booking.packingList.length > 0 && !regenerate) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    packingList: booking.packingList
+                }
+            });
+        }
+
+        const startDate = new Date(booking.startDate);
+        const endDate = new Date(booking.endDate);
+        const days = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))) || 1;
+
+        // Static fallback generator in case both AI calls fail
+        const runStaticFallback = async () => {
+            const loc = booking.destination.toLowerCase();
+            const essentials = ["ID Proofs (Aadhaar/Passport)", "Phone & Charger", "First Aid Kit & Medicines", "Cash and Debit/Credit Cards", "Printed E-Ticket"];
+            let clothes = ["Comfortable T-shirts", "Jeans / Trousers", "Walking Shoes", "Socks & Undergarments"];
+            let specific = ["Sunglasses", "Sunscreen Lotion", "Toiletries Kit"];
+
+            if (loc.includes("manali") || loc.includes("kutch") || loc.includes("snow") || loc.includes("saputara")) {
+                clothes = ["Thermals & Sweaters", "Heavy Jacket", "Woolen Socks", "Gloves & Beanie", "Comfortable Shoes"];
+                specific = ["Cold Cream / Moisturizer", "Lip Balm", "Sunglasses", "Thermos Flask"];
+            } else if (loc.includes("goa") || loc.includes("beach") || loc.includes("somnath") || loc.includes("dwarka")) {
+                clothes = ["Light Cotton Shirts", "Shorts & Capris", "Sandals / Flip-flops", "Sunglasses"];
+                specific = ["High SPF Sunscreen", "Wide-brim Hat", "Quick-dry Towel", "Swimwear"];
+            }
+
+            const fallbackList = [
+                { category: "Essentials", items: essentials.map(i => ({ name: i, packed: false, custom: false })) },
+                { category: "Clothing", items: clothes.map(i => ({ name: i, packed: false, custom: false })) },
+                { category: "Toiletries", items: [{ name: "Toothpaste & Brush", packed: false, custom: false }, { name: "Shampoo & Soap", packed: false, custom: false }] },
+                { category: "Electronics", items: [{ name: "Phone & Charger", packed: false, custom: false }, { name: "Power Bank", packed: false, custom: false }] },
+                { category: "Activity Specific", items: specific.map(i => ({ name: i, packed: false, custom: false })) }
+            ];
+
+            booking.packingList = fallbackList;
+            await booking.save();
+            return fallbackList;
+        };
+
+        const groqKey = process.env.GROQ_API_KEY;
+        const geminiKey = process.env.GEMINI_API_KEY;
+
+        const categories = ['Essentials', 'Clothing', 'Toiletries', 'Electronics', 'Activity Specific'];
+
+        if (groqKey) {
+            try {
+                // Method 1: Use Groq if key is present
+                const prompt = `Generate a customized packing checklist for a trip to ${booking.destination} for ${days} days.
+Travelers Count: ${booking.travelers}
+Travelers Details: ${JSON.stringify(booking.travelersDetails || [])}
+Flight Details: ${booking.flight ? JSON.stringify(booking.flight) : 'No flight booked'}
+Hotel Details: ${booking.hotel ? JSON.stringify(booking.hotel) : 'No hotel booked'}
+
+Generate item quantities matching the ${days}-day duration (e.g. for clothing). Customize activity-specific items for ${booking.destination} (e.g. jungle safari gear for Gir, religious attire for Somnath/Dwarka, desert accessories for Kutch, hill station gear for Saputara).
+
+Respond in this exact JSON format (no markdown, no code fences, just raw JSON text):
+{
+  "Essentials": ["item 1 with quantity/details", "item 2..."],
+  "Clothing": ["item 1 with quantity/details", "item 2..."],
+  "Toiletries": ["item 1", "item 2..."],
+  "Electronics": ["item 1", "item 2..."],
+  "Activity Specific": ["item 1", "item 2..."]
+}`;
+
+                const completion = await groq.chat.completions.create({
+                    model: MODEL,
+                    messages: [
+                        { role: "system", content: "You are a travel packing expert. Return ONLY valid JSON, no markdown formatting or code fences." },
+                        { role: "user", content: prompt },
+                    ],
+                    max_tokens: 1024,
+                    temperature: 0.6,
+                });
+
+                const text = (completion.choices[0]?.message?.content || "").trim();
+                const cleaned = text.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
+                const parsedSuggestions = JSON.parse(cleaned);
+
+                const packingList = categories.map(cat => {
+                    const itemsList = parsedSuggestions[cat] || parsedSuggestions[cat.toLowerCase()] || parsedSuggestions[cat.replace(" ", "")] || [];
+                    return {
+                        category: cat,
+                        items: itemsList.map(itemName => ({
+                            name: itemName,
+                            packed: false,
+                            custom: false
+                        }))
+                    };
+                });
+
+                // Ensure all 5 categories exist
+                categories.forEach(cat => {
+                    if (!packingList.some(item => item.category === cat)) {
+                        packingList.push({ category: cat, items: [] });
+                    }
+                });
+
+                booking.packingList = packingList;
+                await booking.save();
+
+                return res.status(200).json({
+                    success: true,
+                    data: { packingList }
+                });
+
+            } catch (groqErr) {
+                console.error("⚠️ Groq Packing Suggestions Error, trying Gemini:", groqErr.message);
+            }
+        }
+
+        if (geminiKey) {
+            try {
+                // Method 2: Use Gemini if Groq fails or is not present
+                const genAI = new GoogleGenerativeAI(geminiKey);
+                const model = genAI.getGenerativeModel({
+                    model: "gemini-2.5-flash",
+                    systemInstruction: "You are TripWell AI, an expert travel packing assistant. Group the items into exactly 5 categories: 'Essentials', 'Clothing', 'Toiletries', 'Electronics', and 'Activity Specific'. Return ONLY a JSON object mapping these categories to arrays of item strings. Return only the raw JSON text."
+                });
+
+                const prompt = `Generate a customized packing checklist for a trip to ${booking.destination} for ${days} days.
+Travelers Count: ${booking.travelers}
+Travelers Details: ${JSON.stringify(booking.travelersDetails || [])}
+Flight Details: ${booking.flight ? JSON.stringify(booking.flight) : 'No flight booked'}
+Hotel Details: ${booking.hotel ? JSON.stringify(booking.hotel) : 'No hotel booked'}
+
+Format response exactly as a JSON object:
+{
+  "Essentials": ["item 1", "item 2"],
+  "Clothing": ["item 1", "item 2"],
+  "Toiletries": ["item 1", "item 2"],
+  "Electronics": ["item 1", "item 2"],
+  "Activity Specific": ["item 1", "item 2"]
+}`;
+
+                const result = await model.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        temperature: 0.3
+                    }
+                });
+
+                const responseText = result.response.text();
+                const cleaned = responseText.replace(/```json\n?/gi, "").replace(/```\n?/g, "").trim();
+                const parsedSuggestions = JSON.parse(cleaned);
+
+                const packingList = categories.map(cat => {
+                    const itemsList = parsedSuggestions[cat] || parsedSuggestions[cat.toLowerCase()] || parsedSuggestions[cat.replace(" ", "")] || [];
+                    return {
+                        category: cat,
+                        items: itemsList.map(itemName => ({
+                            name: itemName,
+                            packed: false,
+                            custom: false
+                        }))
+                    };
+                });
+
+                categories.forEach(cat => {
+                    if (!packingList.some(item => item.category === cat)) {
+                        packingList.push({ category: cat, items: [] });
+                    }
+                });
+
+                booking.packingList = packingList;
+                await booking.save();
+
+                return res.status(200).json({
+                    success: true,
+                    data: { packingList }
+                });
+
+            } catch (geminiErr) {
+                console.error("⚠️ Gemini Packing Suggestions Error, trying static fallback:", geminiErr.message);
+            }
+        }
+
+        // Method 3: Static Fallback
+        const packingList = await runStaticFallback();
+        return res.status(200).json({
+            success: true,
+            data: { packingList }
+        });
+
     } catch (err) {
         console.error("Packing Suggestions Error:", err.message);
         res.status(500).json({
