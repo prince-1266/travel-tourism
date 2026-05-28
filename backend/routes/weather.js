@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
                 "https://nominatim.openstreetmap.org/search",
                 {
                     params: { q: location, format: "json", limit: 1 },
-                    headers: { "User-Agent": "TripPlannerApp/1.0" }
+                    headers: { "User-Agent": "TripWellApp/1.0" }
                 }
             );
 

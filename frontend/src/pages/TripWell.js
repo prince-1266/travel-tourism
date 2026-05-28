@@ -11,7 +11,7 @@ import Step4Hotels from "../components/trip-planner/Step4Hotels";
 import Step5Review from "../components/trip-planner/Step5Review";
 import Step6Payment from "../components/trip-planner/Step6Payment";
 
-export default function TripPlanner() {
+export default function TripWell() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { success: notifySuccess, error: notifyError } = useNotification();

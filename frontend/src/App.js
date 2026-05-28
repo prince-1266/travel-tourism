@@ -25,7 +25,7 @@ import MyBookings from "./pages/MyBookings";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Booking from "./pages/Booking/Booking";
-import TripPlanner from "./pages/TripPlanner";
+import TripWell from "./pages/TripWell";
 import Wishlist from "./pages/Wishlist";
 import BookingDetail from "./pages/BookingDetail";
 import Flights from "./pages/Flights";
@@ -75,7 +75,7 @@ function App() {
           <Route path="search" element={<SearchTrip />} />
           <Route path="destinations" element={<Destinations />} />
           <Route path="destination/:id" element={<DestinationDetail />} />
-          <Route path="plan/:id" element={<TripPlanner />} />
+          <Route path="plan/:id" element={<TripWell />} />
           <Route path="booking" element={<Booking />} />
           <Route path="booking/:id" element={<BookingDetail />} />
           <Route path="mybookings" element={<MyBookings />} />

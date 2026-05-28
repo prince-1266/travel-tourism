@@ -75,7 +75,7 @@ export default function AppLayout() {
                         <div className="bg-indigo-600 p-2 rounded-lg group-hover:scale-105 transition-transform">
                             <Mountain className="text-white" size={24} />
                         </div>
-                        <h1 className="text-2xl font-bold text-white tracking-wide">TripPlanner</h1>
+                        <h1 className="text-2xl font-bold text-white tracking-wide">TripWell</h1>
                     </div>
                 </div>
 
