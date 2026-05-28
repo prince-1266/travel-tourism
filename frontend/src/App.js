@@ -29,6 +29,7 @@ import TripPlanner from "./pages/TripPlanner";
 import Wishlist from "./pages/Wishlist";
 import BookingDetail from "./pages/BookingDetail";
 import Flights from "./pages/Flights";
+import PackingAssistant from "./pages/PackingAssistant";
 
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -82,6 +83,7 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
           <Route path="flights" element={<Flights />} />
+          <Route path="packing" element={<PackingAssistant />} />
         </Route>
 
         {/* ================= ADMIN APP ================= */}

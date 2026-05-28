@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { CreditCard, CheckCircle, Plane, Hotel, Users, Info, Printer } from "lucide-react";
+import { CreditCard, CheckCircle, Plane, Hotel, Users, Info, Printer, Briefcase } from "lucide-react";
 
 export default function BookingDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
 
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -73,6 +74,27 @@ export default function BookingDetail() {
                                 <p className="text-5xl font-black text-indigo-950 tracking-tighter">₹{booking.totalPrice?.toLocaleString()}</p>
                             </div>
                         </div>
+
+                        {/* AI PACKING ASSISTANT BANNER FOR CONFIRMED BOOKINGS */}
+                        {(booking.status === 'confirmed' || booking.status === 'completed') && (
+                            <div className="mb-12 bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-indigo-500/5 backdrop-blur-md rounded-[2rem] p-8 border border-indigo-500/20 flex flex-col md:flex-row justify-between items-center gap-6 shadow-sm">
+                                <div className="flex items-center gap-4 text-center md:text-left flex-1">
+                                    <div className="bg-indigo-600/15 p-4 rounded-2xl text-indigo-600 shrink-0">
+                                        <Briefcase size={28} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-indigo-950 uppercase text-lg tracking-tight mb-1">AI Packing Assistant is Ready!</h3>
+                                        <p className="text-sm text-gray-500 font-medium">Get a customized, smart checklist of what to pack for your {booking.travelers} guest(s) visiting {booking.destination}.</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/app/packing?bookingId=${booking._id}`)}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest px-6 py-4 rounded-2xl transition shadow-lg shadow-indigo-200 hover:-translate-y-0.5 active:scale-95 whitespace-nowrap cursor-pointer"
+                                >
+                                    Open Checklist
+                                </button>
+                            </div>
+                        )}
 
                         {/* GUEST LIST */}
                         {booking.travelersDetails && booking.travelersDetails.length > 0 && (

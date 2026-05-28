@@ -4,6 +4,7 @@ import {
   getUserBookings,
   getAllBookings,
   deleteBooking,
+  updateBookingPackingList,
 } from "../controllers/bookingController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
@@ -13,6 +14,7 @@ const router = express.Router();
 router.post("/", protect, createBooking);
 router.get("/my", protect, getUserBookings);
 router.delete("/:id", protect, deleteBooking);
+router.put("/:id/packing", protect, updateBookingPackingList);
 
 // Admin Routes
 router.get("/", protect, adminOnly, getAllBookings);

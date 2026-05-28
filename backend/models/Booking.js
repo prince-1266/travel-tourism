@@ -43,7 +43,15 @@ const bookingSchema = new mongoose.Schema(
     paymentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment"
-    }
+    },
+    packingList: [{
+      category: { type: String, required: true },
+      items: [{
+        name: { type: String, required: true },
+        packed: { type: Boolean, default: false },
+        custom: { type: Boolean, default: false }
+      }]
+    }]
   },
   { timestamps: true }
 );

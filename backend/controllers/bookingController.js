@@ -81,3 +81,21 @@ export const deleteBooking = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+/* UPDATE BOOKING PACKING LIST */
+export const updateBookingPackingList = async (req, res) => {
+    try {
+        const { packingList } = req.body;
+        const booking = await Booking.findOne({ _id: req.params.id, user: req.user.id });
+        if (!booking) {
+            return res.status(404).json({ message: "Booking not found" });
+        }
+
+        booking.packingList = packingList;
+        const updatedBooking = await booking.save();
+
+        res.status(200).json({ success: true, packingList: updatedBooking.packingList });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to update packing list", error: err.message });
+    }
+};
