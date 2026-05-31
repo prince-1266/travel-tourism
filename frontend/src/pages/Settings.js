@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  User, Lock, Bell, Moon, Sun,
-  LogOut, ChevronRight, Shield,
-  CreditCard, Trash2, Save, Mail,
+  User, Lock, Bell,
+  LogOut, Shield,
+  Trash2, Save, Mail,
   Phone, Loader, Settings as SettingsIcon,
-  Globe, Landmark, Smartphone, Sparkles,
   Eye, EyeOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,7 +80,11 @@ export default function Settings() {
         type: "reset",
         email: user.email
       });
-      success(res.data.message || "OTP sent to your email.");
+      if (res.data.otp) {
+        success(`OTP: ${res.data.otp} (Sent to email)`);
+      } else {
+        success(res.data.message || "OTP sent to your email.");
+      }
       setOtpStep("verify");
       setOtpData({ ...otpData, otp: ["", "", "", "", "", ""] }); // Reset OTP boxes
       setTimeLeft(60); // Start 60s countdown
@@ -583,21 +586,6 @@ const InputGroup = ({ label, icon, ...props }) => (
   </div>
 );
 
-const SelectionGroup = ({ label, icon, options, value, onChange }) => (
-  <div className="space-y-3">
-    <label className="block text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
-      {icon} {label}
-    </label>
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {options.map(opt => (
-        <button key={opt} onClick={() => onChange(opt)} className={`py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all
-          ${value === opt ? "bg-white text-indigo-950 shadow-lg" : "bg-white/5 text-white/40 hover:bg-white/10"}`}>
-          {opt}
-        </button>
-      ))}
-    </div>
-  </div>
-);
 
 const ToggleGroup = ({ label, description, active, onClick }) => (
   <div className="flex items-center justify-between p-7 rounded-3xl bg-gray-50 border border-gray-100 hover:bg-indigo-50/50 hover:border-indigo-100 transition-all cursor-pointer group" onClick={onClick}>

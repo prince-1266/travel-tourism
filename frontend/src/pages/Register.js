@@ -118,7 +118,11 @@ export default function Register() {
       if (res.data.success) {
         setOtpSent(true);
         setTimer(60); // Start 60s timer
-        notifySuccess(`OTP sent to ${email}`);
+        if (res.data.otp) {
+          notifySuccess(`OTP: ${res.data.otp} (Sent to ${email})`);
+        } else {
+          notifySuccess(`OTP sent to ${email}`);
+        }
       }
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to send OTP";
