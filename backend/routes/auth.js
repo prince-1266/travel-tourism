@@ -23,6 +23,15 @@ router.get("/diag", async (req, res) => {
     const adminCol = mongoose.connection.db.collection("admin");
     const adminInAdminCol = await adminCol.findOne({ email: process.env.ADMIN_EMAIL });
 
+    // Test Nodemailer Transporter connection
+    let emailVerification = "Not tested";
+    try {
+      await transporter.verify();
+      emailVerification = "SUCCESS: Connected to Gmail SMTP";
+    } catch (verifyError) {
+      emailVerification = `FAILURE: ${verifyError.message}`;
+    }
+
     res.json({
       dbName: mongoose.connection.name,
       collections: colNames,
@@ -30,7 +39,8 @@ router.get("/diag", async (req, res) => {
       adminFoundInUsers: !!adminInUsers,
       adminFoundInAdminCol: !!adminInAdminCol,
       adminDetailsInUsers: adminInUsers ? { email: adminInUsers.email, role: adminInUsers.role } : null,
-      adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null
+      adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null,
+      emailVerification
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
