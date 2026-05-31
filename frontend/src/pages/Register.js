@@ -3,15 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
-import { useTheme } from "../context/ThemeContext";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
 import api from "../api/axios";
 import { PhoneNumberUtil } from "google-libphonenumber";
 
 export default function Register() {
-  const { theme } = useTheme();
   const navigate = useNavigate();
   const { login } = useAuth();
 

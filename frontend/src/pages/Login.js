@@ -3,16 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
-import axios from "axios";
 import api from "../api/axios";
 import { GoogleLogin } from "@react-oauth/google";
 
 import { useNotification } from "../context/NotificationContext";
-import { useTheme } from "../context/ThemeContext";
 // ... (imports)
 
 const Login = () => {
-  const { theme } = useTheme();
   const { login } = useAuth();
   const { error: notifyError } = useNotification();
   const navigate = useNavigate();
