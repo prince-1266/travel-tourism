@@ -102,11 +102,7 @@ const ForgotPassword = () => {
       const res = await api.post("/auth/send-otp", payload);
 
       if (res.data.success) {
-        if (res.data.otp) {
-          notifySuccess(`OTP: ${res.data.otp} (Sent to ${identifier})`);
-        } else {
-          notifySuccess(res.data.message);
-        }
+        notifySuccess(res.data.message);
         setStep('reset');
         setTimer(60);
       }
