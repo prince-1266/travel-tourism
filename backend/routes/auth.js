@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 import mongoose from "mongoose";
 import { protect } from "../middleware/authMiddleware.js";
+import axios from "axios";
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -194,13 +195,8 @@ router.post("/send-otp", async (req, res) => {
     console.log(`[OTP] Email Config: User=${process.env.EMAIL_USER ? "YES" : "NO"}, Pass=${process.env.EMAIL_PASS ? "YES" : "NO"}`);
 
     // SEND EMAIL IF AVAILABLE
-    if (targetEmail && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      console.log(`[OTP] Attempting to send email to ${targetEmail}...`);
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: targetEmail,
-        subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - Prince Modh. (TripWell)`,
-        html: `
+    if (targetEmail) {
+      const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
             <div style="text-align: center; margin-bottom: 20px;">
               <h2 style="color: #4F46E5;">Prince Modh. (TripWell) 🌍</h2>
@@ -220,21 +216,60 @@ router.post("/send-otp", async (req, res) => {
               <p>&copy; ${new Date().getFullYear()} Prince Modh. All rights reserved.</p>
             </div>
           </div>
-        `,
-      };
+        `;
 
-      try {
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent successfully to ${targetEmail}`);
-        return res.json({ success: true, message: `OTP sent to ${targetEmail}`, otp });
-      } catch (emailError) {
-        console.error("❌ Error sending email:", emailError.message);
-        // Fallback: Still return success but log error so user can find OTP in console
+      if (process.env.RESEND_API_KEY) {
+        // Use Resend HTTPS API (highly robust, never blocked by cloud hosts like Render)
+        setImmediate(() => {
+          console.log(`[OTP] Dispatching email to ${targetEmail} in the background via Resend API...`);
+          axios.post("https://api.resend.com/emails", {
+            from: "TripWell <onboarding@resend.dev>",
+            to: targetEmail,
+            subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - Prince Modh. (TripWell)`,
+            html: htmlContent
+          }, {
+            headers: {
+              "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json"
+            }
+          })
+          .then(() => {
+            console.log(`✅ Email sent successfully via Resend API to ${targetEmail}`);
+          })
+          .catch((resendError) => {
+            console.error("❌ Error sending email via Resend API:", resendError.response?.data || resendError.message);
+          });
+        });
+
         return res.json({
           success: true,
-          message: "OTP generated (Email failed, check server console)",
+          message: `OTP generated and sending to ${targetEmail}`,
           otp,
-          emailError: emailError.message
+        });
+      } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        // Fallback to standard SMTP
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: targetEmail,
+          subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - Prince Modh. (TripWell)`,
+          html: htmlContent,
+        };
+
+        setImmediate(() => {
+          console.log(`[OTP] Dispatching email to ${targetEmail} in the background via SMTP...`);
+          transporter.sendMail(mailOptions)
+            .then(() => {
+              console.log(`✅ Email sent successfully via SMTP to ${targetEmail}`);
+            })
+            .catch((emailError) => {
+              console.error("❌ Error sending email asynchronously via SMTP:", emailError.message);
+            });
+        });
+
+        return res.json({
+          success: true,
+          message: `OTP generated and sending to ${targetEmail}`,
+          otp,
         });
       }
     }
