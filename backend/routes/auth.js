@@ -172,10 +172,13 @@ router.post("/send-otp", async (req, res) => {
       targetEmail = targetEmail.trim().toLowerCase();
     }
     let targetPhone = phone;
+    if (targetPhone) {
+      targetPhone = targetPhone.replace(/\s|-/g, "");
+    }
     let user = null;
 
-    if (phone) {
-      user = await User.findOne({ phone });
+    if (targetPhone) {
+      user = await User.findOne({ phone: targetPhone });
     } else if (targetEmail) {
       user = await User.findOne({ email: targetEmail });
       if (user) targetPhone = user.phone;
@@ -189,9 +192,9 @@ router.post("/send-otp", async (req, res) => {
 
     // Validate Phone Format (Indian)
     // Only check if phone is provided directly (not derived from user for reset)
-    if (phone && phone.startsWith("+91")) {
+    if (targetPhone && targetPhone.startsWith("+91")) {
       const indianPhoneRegex = /^\+91[6-9]\d{9}$/;
-      if (!indianPhoneRegex.test(phone)) {
+      if (!indianPhoneRegex.test(targetPhone)) {
         return res
           .status(400)
           .json({ message: "Invalid Indian phone number. Must start with 6-9." });
@@ -322,6 +325,9 @@ router.post("/verify-otp-reset", async (req, res) => {
   try {
     // Resolve Phone if Email provided
     let targetPhone = phone;
+    if (targetPhone) {
+      targetPhone = targetPhone.replace(/\s|-/g, "");
+    }
     if (!targetPhone && email) {
       const normalizedEmail = email.trim().toLowerCase();
       const user = await User.findOne({ email: normalizedEmail });
