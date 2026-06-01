@@ -48,6 +48,42 @@ router.get("/diag", async (req, res) => {
   }
 });
 
+/* ================= LIVE EMAIL TEST DIAGNOSTIC ================= */
+router.get("/test-email", async (req, res) => {
+  const { to } = req.query;
+  if (!to) {
+    return res.status(400).json({ error: "Query parameter 'to' is required." });
+  }
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: to.trim().toLowerCase(),
+    subject: "TripWell Live Test Email Diagnostic",
+    html: `<h3>Nodemailer Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    res.json({
+      success: true,
+      message: `Email sent successfully to ${to}`,
+      info: {
+        messageId: info.messageId,
+        envelope: info.envelope,
+        accepted: info.accepted,
+        rejected: info.rejected,
+        response: info.response
+      }
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err.message,
+      stack: err.stack
+    });
+  }
+});
+
 /* ================= GOOGLE LOGIN ================= */
 router.post("/google", async (req, res) => {
   const { token } = req.body;
