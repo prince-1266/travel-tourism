@@ -75,20 +75,17 @@ router.get("/test-email", async (req, res) => {
     return res.status(400).json({ error: "Query parameter 'to' is required." });
   }
 
-  const htmlContent = `<h3>Nodemailer Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`;
-
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: to.trim().toLowerCase(),
     subject: "TripWell Live Test Email Diagnostic (SMTP)",
-    html: htmlContent
+    html: `<h3>Nodemailer SMTP Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
     res.json({
       success: true,
-      provider: "smtp",
       message: `Email sent successfully to ${to}`,
       info: {
         messageId: info.messageId,
@@ -101,7 +98,6 @@ router.get("/test-email", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
-      provider: "smtp",
       error: err.message,
       stack: err.stack
     });

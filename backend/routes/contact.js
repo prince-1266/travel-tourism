@@ -1,7 +1,6 @@
 import express from "express";
 import Contact from "../models/Contact.js";
 import nodemailer from "nodemailer";
-import axios from "axios";
 
 const router = express.Router();
 
