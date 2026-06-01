@@ -23,14 +23,42 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then((conn) => {
-    console.log(`🚀 MongoDB Connected: ${conn.connection.name}`);
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Error:", err.message);
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+  if (mongoose.connection.readyState === 1) {
+    isConnected = true;
+    return;
+  }
+
+  console.log("⏳ Connecting to MongoDB Atlas...");
+  mongoose.set("bufferCommands", false);
+  const conn = await mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
   });
+  console.log(`🚀 MongoDB Connected: ${conn.connection.name}`);
+  isConnected = true;
+};
+
+// Database connection middleware
+app.use(async (req, res, next) => {
+  if (req.path === "/api/auth/test-email" || req.path === "/api/auth/diag") {
+    return next();
+  }
+
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("❌ Database connection error in middleware:", err.message);
+    res.status(500).json({
+      message: "Database connection failed. Please ensure the backend MONGO_URI environment variable is correct and MongoDB Atlas allows access from all IPs.",
+      error: err.message
+    });
+  }
+});
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -67,6 +95,9 @@ const startServer = (port) => {
 
 // Start local server only if not running inside Vercel serverless environment
 if (!process.env.VERCEL) {
+  connectDB().catch((err) => {
+    console.error("❌ Pre-connecting MongoDB failed:", err.message);
+  });
   startServer(PORT);
 }
 

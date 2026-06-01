@@ -26,45 +26,75 @@ const transporter = nodemailer.createTransport({
 
 /* ================= DIAGNOSTIC ROUTE ================= */
 router.get("/diag", async (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const states = ["disconnected", "connected", "connecting", "disconnecting"];
+  
+  let collections = [];
+  let colNames = [];
+  let adminInUsers = false;
+  let adminInAdminCol = false;
+  let adminDetailsInUsers = null;
+  let adminDetailsInAdminCol = null;
+  let dbError = null;
+
   try {
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    const colNames = collections.map(c => c.name);
-
-    // Check 'users' collection (standard)
-    const adminInUsers = await User.findOne({ email: process.env.ADMIN_EMAIL });
-
-    // Check 'admin' collection (suspicious from screenshot)
-    const adminCol = mongoose.connection.db.collection("admin");
-    const adminInAdminCol = await adminCol.findOne({ email: process.env.ADMIN_EMAIL });
-
-    // Test Nodemailer Transporter connection
-    let emailVerification = "Not tested";
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      try {
-        await transporter.verify();
-        emailVerification = "SUCCESS: Connected to Gmail SMTP";
-      } catch (verifyError) {
-        emailVerification = `FAILURE: ${verifyError.message}`;
-      }
-    } else {
-      emailVerification = "SKIPPED: EMAIL_USER or EMAIL_PASS not configured";
+    if (mongoose.connection.readyState !== 1) {
+      console.log("Diag: Database not connected. Attempting connection...");
+      await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
     }
-
-    res.json({
-      dbName: mongoose.connection.name,
-      collections: colNames,
-      adminEmailInEnv: process.env.ADMIN_EMAIL,
-      adminFoundInUsers: !!adminInUsers,
-      adminFoundInAdminCol: !!adminInAdminCol,
-      adminDetailsInUsers: adminInUsers ? { email: adminInUsers.email, role: adminInUsers.role } : null,
-      adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null,
-      emailUserConfigured: !!process.env.EMAIL_USER,
-      emailPassConfigured: !!process.env.EMAIL_PASS,
-      emailVerification
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (connectError) {
+    dbError = `Connection failed: ${connectError.message}`;
   }
+
+  try {
+    if (mongoose.connection.readyState === 1 && mongoose.connection.db) {
+      collections = await mongoose.connection.db.listCollections().toArray();
+      colNames = collections.map(c => c.name);
+
+      // Check 'users' collection (standard)
+      const adminUser = await User.findOne({ email: process.env.ADMIN_EMAIL });
+      adminInUsers = !!adminUser;
+      adminDetailsInUsers = adminUser ? { email: adminUser.email, role: adminUser.role } : null;
+
+      // Check 'admin' collection (suspicious from screenshot)
+      const adminCol = mongoose.connection.db.collection("admin");
+      const adminInAdmin = await adminCol.findOne({ email: process.env.ADMIN_EMAIL });
+      adminInAdminCol = !!adminInAdmin;
+      adminDetailsInAdminCol = adminInAdmin ? { email: adminInAdmin.email, role: adminInAdmin.role } : null;
+    } else if (!dbError) {
+      dbError = "Database connection state is not connected (1) and db object is missing.";
+    }
+  } catch (queryError) {
+    dbError = dbError ? `${dbError} | Query failed: ${queryError.message}` : `Query failed: ${queryError.message}`;
+  }
+
+  // Test Nodemailer Transporter connection
+  let emailVerification = "Not tested";
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    try {
+      await transporter.verify();
+      emailVerification = "SUCCESS: Connected to Gmail SMTP";
+    } catch (verifyError) {
+      emailVerification = `FAILURE: ${verifyError.message}`;
+    }
+  } else {
+    emailVerification = "SKIPPED: EMAIL_USER or EMAIL_PASS not configured";
+  }
+
+  res.json({
+    dbState: states[mongoose.connection.readyState] || mongoose.connection.readyState,
+    dbName: mongoose.connection.name || null,
+    dbError,
+    collections: colNames,
+    adminEmailInEnv: process.env.ADMIN_EMAIL,
+    adminFoundInUsers: adminInUsers,
+    adminFoundInAdminCol: adminInAdminCol,
+    adminDetailsInUsers,
+    adminDetailsInAdminCol,
+    emailUserConfigured: !!process.env.EMAIL_USER,
+    emailPassConfigured: !!process.env.EMAIL_PASS,
+    emailVerification
+  });
 });
 
 
