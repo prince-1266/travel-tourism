@@ -7,9 +7,22 @@ import Otp from "../models/Otp.js";
 import mongoose from "mongoose";
 import { protect } from "../middleware/authMiddleware.js";
 import axios from "axios";
+import nodemailer from "nodemailer";
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// SMTP transporter with short timeouts (5s) to avoid hanging
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 5000,
+});
 
 /* ================= DIAGNOSTIC ROUTE ================= */
 router.get("/diag", async (req, res) => {
@@ -26,11 +39,15 @@ router.get("/diag", async (req, res) => {
 
     // Test Nodemailer Transporter connection
     let emailVerification = "Not tested";
-    try {
-      await transporter.verify();
-      emailVerification = "SUCCESS: Connected to Gmail SMTP";
-    } catch (verifyError) {
-      emailVerification = `FAILURE: ${verifyError.message}`;
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      try {
+        await transporter.verify();
+        emailVerification = "SUCCESS: Connected to Gmail SMTP";
+      } catch (verifyError) {
+        emailVerification = `FAILURE: ${verifyError.message}`;
+      }
+    } else {
+      emailVerification = "SKIPPED: EMAIL_USER or EMAIL_PASS not configured";
     }
 
     res.json({
@@ -41,12 +58,16 @@ router.get("/diag", async (req, res) => {
       adminFoundInAdminCol: !!adminInAdminCol,
       adminDetailsInUsers: adminInUsers ? { email: adminInUsers.email, role: adminInUsers.role } : null,
       adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null,
+      resendApiKeyConfigured: !!process.env.RESEND_API_KEY,
+      emailUserConfigured: !!process.env.EMAIL_USER,
+      emailPassConfigured: !!process.env.EMAIL_PASS,
       emailVerification
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 /* ================= LIVE EMAIL TEST DIAGNOSTIC ================= */
 router.get("/test-email", async (req, res) => {
@@ -55,17 +76,50 @@ router.get("/test-email", async (req, res) => {
     return res.status(400).json({ error: "Query parameter 'to' is required." });
   }
 
+  const htmlContent = `<h3>Nodemailer/Resend Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`;
+
+  if (process.env.RESEND_API_KEY) {
+    try {
+      console.log(`[Diagnostic] Sending test email to ${to} via Resend...`);
+      const response = await axios.post("https://api.resend.com/emails", {
+        from: "TripWell <onboarding@resend.dev>",
+        to: to.trim().toLowerCase(),
+        subject: "TripWell Live Test Email Diagnostic (Resend API)",
+        html: htmlContent
+      }, {
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      return res.json({
+        success: true,
+        provider: "resend",
+        message: `Email sent successfully to ${to} via Resend API`,
+        data: response.data
+      });
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        provider: "resend",
+        error: err.response?.data || err.message,
+        stack: err.stack
+      });
+    }
+  }
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: to.trim().toLowerCase(),
-    subject: "TripWell Live Test Email Diagnostic",
-    html: `<h3>Nodemailer Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`
+    subject: "TripWell Live Test Email Diagnostic (SMTP)",
+    html: htmlContent
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
     res.json({
       success: true,
+      provider: "smtp",
       message: `Email sent successfully to ${to}`,
       info: {
         messageId: info.messageId,
@@ -78,11 +132,13 @@ router.get("/test-email", async (req, res) => {
   } catch (err) {
     res.status(500).json({
       success: false,
+      provider: "smtp",
       error: err.message,
       stack: err.stack
     });
   }
 });
+
 
 /* ================= GOOGLE LOGIN ================= */
 router.post("/google", async (req, res) => {
@@ -137,15 +193,6 @@ router.post("/google", async (req, res) => {
 });
 
 /* ================= SEND OTP (MOCKED / EMAIL) ================= */
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
 
 router.post("/send-otp", async (req, res) => {
   const { phone, email, type } = req.body; // type: 'register' | 'reset'
