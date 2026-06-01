@@ -168,8 +168,9 @@ export default function Register() {
         navigate("/login");
       }, 2500);
     } catch (err) {
-      setError("Server error. Please try again.");
-      notifyError("Server error. Please try again.");
+      const msg = err.response?.data?.message || "Server error. Please try again.";
+      setError(msg);
+      notifyError(msg);
       setLoading(false);
     }
   };
