@@ -37,27 +37,8 @@ router.post("/", async (req, res) => {
             </div>
         `;
 
-        if (process.env.RESEND_API_KEY) {
-            try {
-                console.log(`[Contact] Attempting to send notification to tripwell.support@gmail.com via Resend...`);
-                await axios.post("https://api.resend.com/emails", {
-                    from: "TripWell Support <onboarding@resend.dev>",
-                    to: "tripwell.support@gmail.com",
-                    subject: `New Contact Message: ${subject}`,
-                    html: htmlContent
-                }, {
-                    headers: {
-                        "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
-                        "Content-Type": "application/json"
-                    }
-                });
-                console.log("✅ [Contact] Notification email sent successfully via Resend.");
-            } catch (emailError) {
-                console.error("❌ [Contact] Resend notification failed:", emailError.response?.data || emailError.message);
-            }
-        } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-            // Create transporter only when needed to ensure process.env is ready
-            // and use short connection/socket timeouts (5s) to avoid hanging
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            // Create transporter with short connection/socket timeouts (5s) to avoid hanging
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {
@@ -84,7 +65,7 @@ router.post("/", async (req, res) => {
                 console.error("❌ [Contact] SMTP notification failed:", emailError.message);
             }
         } else {
-            console.log("[Contact] Email notification skipped: No email credentials or Resend API key configured.");
+            console.log("[Contact] Email notification skipped: No email credentials configured.");
         }
 
         res.status(201).json({ message: "Message sent successfully!", contact: newContact });

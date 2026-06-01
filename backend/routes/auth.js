@@ -58,7 +58,6 @@ router.get("/diag", async (req, res) => {
       adminFoundInAdminCol: !!adminInAdminCol,
       adminDetailsInUsers: adminInUsers ? { email: adminInUsers.email, role: adminInUsers.role } : null,
       adminDetailsInAdminCol: adminInAdminCol ? { email: adminInAdminCol.email, role: adminInAdminCol.role } : null,
-      resendApiKeyConfigured: !!process.env.RESEND_API_KEY,
       emailUserConfigured: !!process.env.EMAIL_USER,
       emailPassConfigured: !!process.env.EMAIL_PASS,
       emailVerification
@@ -76,37 +75,7 @@ router.get("/test-email", async (req, res) => {
     return res.status(400).json({ error: "Query parameter 'to' is required." });
   }
 
-  const htmlContent = `<h3>Nodemailer/Resend Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`;
-
-  if (process.env.RESEND_API_KEY) {
-    try {
-      console.log(`[Diagnostic] Sending test email to ${to} via Resend...`);
-      const response = await axios.post("https://api.resend.com/emails", {
-        from: "TripWell <onboarding@resend.dev>",
-        to: to.trim().toLowerCase(),
-        subject: "TripWell Live Test Email Diagnostic (Resend API)",
-        html: htmlContent
-      }, {
-        headers: {
-          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      });
-      return res.json({
-        success: true,
-        provider: "resend",
-        message: `Email sent successfully to ${to} via Resend API`,
-        data: response.data
-      });
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        provider: "resend",
-        error: err.response?.data || err.message,
-        stack: err.stack
-      });
-    }
-  }
+  const htmlContent = `<h3>Nodemailer Test</h3><p>This is a test email sent from the live Render backend server to verify delivery.</p>`;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
@@ -311,36 +280,7 @@ router.post("/send-otp", async (req, res) => {
           </div>
         `;
 
-      if (process.env.RESEND_API_KEY) {
-        // Use Resend HTTPS API (highly robust, never blocked by cloud hosts like Render)
-        setImmediate(() => {
-          console.log(`[OTP] Dispatching email to ${targetEmail} in the background via Resend API...`);
-          axios.post("https://api.resend.com/emails", {
-            from: "TripWell <onboarding@resend.dev>",
-            to: targetEmail,
-            subject: `${type === 'register' ? 'Registration' : 'Reset Password'} OTP - Prince Modh. (TripWell)`,
-            html: htmlContent
-          }, {
-            headers: {
-              "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
-              "Content-Type": "application/json"
-            }
-          })
-          .then(() => {
-            console.log(`✅ Email sent successfully via Resend API to ${targetEmail}`);
-          })
-          .catch((resendError) => {
-            console.error("❌ Error sending email via Resend API:", resendError.response?.data || resendError.message);
-          });
-        });
-
-        return res.json({
-          success: true,
-          message: `OTP generated and sending to ${targetEmail}`,
-          otp,
-        });
-      } else if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        // Fallback to standard SMTP
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: targetEmail,
