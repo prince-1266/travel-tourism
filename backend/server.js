@@ -65,4 +65,9 @@ const startServer = (port) => {
   });
 };
 
-startServer(PORT);
+// Start local server only if not running inside Vercel serverless environment
+if (!process.env.VERCEL) {
+  startServer(PORT);
+}
+
+export default app;
