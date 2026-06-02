@@ -317,22 +317,21 @@ router.post("/send-otp", async (req, res) => {
           html: htmlContent,
         };
 
-        setImmediate(() => {
-          console.log(`[OTP] Dispatching email to ${targetEmail} in the background via SMTP...`);
-          transporter.sendMail(mailOptions)
-            .then(() => {
-              console.log(`✅ Email sent successfully via SMTP to ${targetEmail}`);
-            })
-            .catch((emailError) => {
-              console.error("❌ Error sending email asynchronously via SMTP:", emailError.message);
-            });
-        });
-
-        return res.json({
-          success: true,
-          message: `OTP generated and sending to ${targetEmail}`,
-          otp,
-        });
+        try {
+          console.log(`[OTP] Dispatching email to ${targetEmail} via SMTP...`);
+          await transporter.sendMail(mailOptions);
+          console.log(`✅ Email sent successfully via SMTP to ${targetEmail}`);
+          return res.json({
+            success: true,
+            message: `OTP generated and sent to ${targetEmail}`,
+            otp,
+          });
+        } catch (emailError) {
+          console.error("❌ Error sending email via SMTP:", emailError.message);
+          return res.status(500).json({
+            message: `Failed to send email OTP: ${emailError.message}`
+          });
+        }
       }
     }
 
